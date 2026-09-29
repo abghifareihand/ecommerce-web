@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import Alert from '../Components/Alert.vue';
 
@@ -11,6 +11,22 @@ defineProps({
 });
 
 const page = usePage();
+
+const flashMessage = computed(() => {
+    return page.props.flash?.success || page.props.flash?.error || null;
+});
+
+const flashVariant = computed(() => {
+    if (page.props.flash?.error) return 'danger';
+    return 'success';
+});
+
+const clearFlash = () => {
+    if (page.props.flash) {
+        page.props.flash.success = null;
+        page.props.flash.error = null;
+    }
+};
 const sidebarOpen = ref(false);
 const userMenuOpen = ref(false);
 const userMenuRef = ref(null);
@@ -76,16 +92,11 @@ const getInitials = (name) => {
                 <Link href="/admin/dashboard" class="flex items-center gap-3 group">
                     <div class="relative flex h-9 w-9 items-center justify-center rounded-lg bg-white border border-slate-200/80 shadow-xs overflow-hidden shrink-0">
                         <img
-                            v-if="page.props.store?.logo_url"
-                            :src="page.props.store.logo_url"
+                            :src="page.props.store?.logo_url || '/assets/img/logo.png'"
                             :alt="page.props.store?.name || 'Logo'"
                             class="w-full h-full object-cover object-center"
+                            @error="$event.target.src = '/assets/img/logo.png'"
                         />
-                        <div v-else class="w-full h-full bg-emerald-600 flex items-center justify-center text-white font-bold">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                            </svg>
-                        </div>
                     </div>
                     <div>
                         <div class="font-extrabold text-slate-900 text-base tracking-tight">{{ page.props.store?.name || 'EcoStore' }}</div>
@@ -129,6 +140,22 @@ const getInitials = (name) => {
                 </Link>
 
                 <Link
+                    href="/admin/categories"
+                    @click="sidebarOpen = false"
+                    :class="[
+                        'flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all',
+                        $page.component.startsWith('Admin/Categories')
+                            ? 'bg-emerald-600 text-white shadow-xs'
+                            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    ]"
+                >
+                    <svg class="w-5 h-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                    Kategori Produk
+                </Link>
+
+                <Link
                     href="/admin/banners"
                     @click="sidebarOpen = false"
                     :class="[
@@ -158,6 +185,22 @@ const getInitials = (name) => {
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                     </svg>
                     Pesanan Masuk
+                </Link>
+
+                <Link
+                    href="/admin/reports"
+                    @click="sidebarOpen = false"
+                    :class="[
+                        'flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all',
+                        $page.component.startsWith('Admin/Reports')
+                            ? 'bg-emerald-600 text-white shadow-xs'
+                            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    ]"
+                >
+                    <svg class="w-5 h-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    Laporan Penjualan
                 </Link>
             </nav>
         </aside>
@@ -335,14 +378,26 @@ const getInitials = (name) => {
             <!-- Content Area with Flash Banner -->
             <main class="flex-1 overflow-y-auto no-scrollbar p-4 sm:p-8">
                 <div class="w-full">
-                    <div v-if="page.props.flash?.success || page.props.flash?.error" class="mb-6">
-                        <Alert v-if="page.props.flash.success" variant="success">
-                            {{ page.props.flash.success }}
-                        </Alert>
-                        <Alert v-if="page.props.flash.error" variant="danger">
-                            {{ page.props.flash.error }}
-                        </Alert>
-                    </div>
+                    <!-- Flash Alert Notification with Auto-dismiss & Zero Leftover Space -->
+                    <Transition
+                        enter-active-class="transition-all duration-200 ease-out"
+                        enter-from-class="opacity-0 -translate-y-1"
+                        enter-to-class="opacity-100 translate-y-0"
+                        leave-active-class="transition-all duration-200 ease-in"
+                        leave-from-class="opacity-100 translate-y-0"
+                        leave-to-class="opacity-0 -translate-y-1"
+                    >
+                        <div v-if="flashMessage" class="mb-6">
+                            <Alert
+                                :key="flashMessage"
+                                :variant="flashVariant"
+                                :duration="4000"
+                                @dismiss="clearFlash"
+                            >
+                                {{ flashMessage }}
+                            </Alert>
+                        </div>
+                    </Transition>
 
                     <slot />
                 </div>

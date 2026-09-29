@@ -37,9 +37,12 @@ class OrderController extends Controller
             $itemsToCreate = [];
             $whatsAppLines = [];
 
-            // Load products securely from DB
+            // Load active products securely from DB
             $productIds = collect($validated['items'])->pluck('product_id');
-            $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
+            $products = Product::whereIn('id', $productIds)
+                ->where('is_active', true)
+                ->get()
+                ->keyBy('id');
 
             foreach ($validated['items'] as $item) {
                 $product = $products->get($item['product_id']);
@@ -48,6 +51,14 @@ class OrderController extends Controller
                 }
 
                 $qty = (int) $item['quantity'];
+
+                // Check stock availability
+                if ($product->stock < $qty) {
+                    return response()->json([
+                        'message' => "Stok produk '{$product->name}' tidak mencukupi (sisa: {$product->stock} unit).",
+                    ], 422);
+                }
+
                 $subtotal = $product->price * $qty;
                 $totalAmount += $subtotal;
 
@@ -82,6 +93,9 @@ class OrderController extends Controller
 
             foreach ($itemsToCreate as $itemData) {
                 $order->items()->create($itemData);
+
+                // Deduct stock
+                Product::where('id', $itemData['product_id'])->decrement('stock', $itemData['quantity']);
             }
 
             // Build clean WhatsApp message to store admin
@@ -103,7 +117,7 @@ class OrderController extends Controller
                 "*Rincian Pesanan:*\n".
                 "{$itemsText}\n\n".
                 "*Subtotal Belanja:* *{$totalText}*\n\n".
-                "🔍 *Link Lacak Pesanan:* {$trackingUrl}\n\n".
+                "*Link Lacak Pesanan:* {$trackingUrl}\n\n".
                 'Mohon info total beserta ongkir dan nomor rekening pembayarannya ya min. Terima kasih!';
 
             $encodedText = rawurlencode($message);

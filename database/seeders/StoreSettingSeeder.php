@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\StoreSetting;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Storage;
 
 class StoreSettingSeeder extends Seeder
 {
@@ -13,18 +12,12 @@ class StoreSettingSeeder extends Seeder
      */
     public function run(): void
     {
-        $logoPath = null;
-        if (file_exists(public_path('assets/img/logo.png'))) {
-            Storage::disk('public')->put('store/logo.png', file_get_contents(public_path('assets/img/logo.png')));
-            $logoPath = 'store/logo.png';
-        }
-
         StoreSetting::updateOrCreate(
             ['id' => 1],
             [
                 'name' => 'EcoStore',
                 'tagline' => 'Produk Kriya & Gaya Hidup Ramah Lingkungan',
-                'logo' => $logoPath,
+                'logo' => 'assets/img/logo.png',
                 'phone' => '08985454555',
                 'email' => 'kontak@ecostore.com',
                 'address' => 'Jl. Kerajinan No. 12, Sleman, D.I. Yogyakarta 55281',

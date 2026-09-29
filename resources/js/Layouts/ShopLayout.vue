@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import Alert from '../Components/Alert.vue';
 import { useCart } from '../Stores/cart';
@@ -7,6 +7,22 @@ import { useCart } from '../Stores/cart';
 const page = usePage();
 const cart = useCart();
 const searchQuery = ref('');
+
+const flashMessage = computed(() => {
+    return page.props.flash?.success || page.props.flash?.error || null;
+});
+
+const flashVariant = computed(() => {
+    if (page.props.flash?.error) return 'danger';
+    return 'success';
+});
+
+const clearFlash = () => {
+    if (page.props.flash) {
+        page.props.flash.success = null;
+        page.props.flash.error = null;
+    }
+};
 
 const executeSearch = () => {
     router.get('/products', { search: searchQuery.value }, { preserveState: true, replace: true });
@@ -20,23 +36,18 @@ const formatRupiah = (value) => {
 <template>
     <div class="min-h-screen flex flex-col bg-white text-slate-800 font-sans">
         <!-- Main E-Commerce Navbar -->
-        <header class="sticky top-0 z-40 bg-white border-b border-slate-200/90 shadow-sm">
+        <header class="sticky top-0 z-40 bg-white border-b border-slate-100">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16 sm:h-20 gap-3 sm:gap-8">
                     <!-- Store Brand -->
                     <Link href="/products" class="flex items-center gap-2.5 sm:gap-3 shrink-0 group min-w-0">
                         <div class="relative flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-lg bg-white border border-slate-200/80 shadow-xs group-hover:scale-105 transition-transform overflow-hidden shrink-0">
                             <img
-                                v-if="page.props.store?.logo_url"
-                                :src="page.props.store.logo_url"
+                                :src="page.props.store?.logo_url || '/assets/img/logo.png'"
                                 :alt="page.props.store?.name || 'Logo'"
                                 class="w-full h-full object-cover object-center"
+                                @error="$event.target.src = '/assets/img/logo.png'"
                             />
-                            <div v-else class="w-full h-full bg-emerald-600 flex items-center justify-center text-white font-bold">
-                                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                                </svg>
-                            </div>
                         </div>
                         <div class="flex items-center gap-1.5 sm:gap-2 truncate">
                             <span class="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900 group-hover:text-emerald-700 transition-colors truncate">
@@ -118,15 +129,26 @@ const formatRupiah = (value) => {
             </div>
         </header>
 
-        <!-- Flash Message Notification -->
-        <div v-if="page.props.flash?.success || page.props.flash?.error" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full">
-            <Alert v-if="page.props.flash.success" variant="success">
-                {{ page.props.flash.success }}
-            </Alert>
-            <Alert v-if="page.props.flash.error" variant="danger">
-                {{ page.props.flash.error }}
-            </Alert>
-        </div>
+        <!-- Flash Message Notification with Auto-dismiss & Zero Leftover Space -->
+        <Transition
+            enter-active-class="transition-all duration-200 ease-out"
+            enter-from-class="opacity-0 -translate-y-1"
+            enter-to-class="opacity-100 translate-y-0"
+            leave-active-class="transition-all duration-200 ease-in"
+            leave-from-class="opacity-100 translate-y-0"
+            leave-to-class="opacity-0 -translate-y-1"
+        >
+            <div v-if="flashMessage" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full">
+                <Alert
+                    :key="flashMessage"
+                    :variant="flashVariant"
+                    :duration="4000"
+                    @dismiss="clearFlash"
+                >
+                    {{ flashMessage }}
+                </Alert>
+            </div>
+        </Transition>
 
         <!-- Shop App Content -->
         <main class="flex-1 w-full">

@@ -4,10 +4,19 @@ import AdminLayout from '../../../Layouts/AdminLayout.vue';
 import ProductForm from '../../../Components/ProductForm.vue';
 import Button from '../../../Components/Button.vue';
 
+defineProps({
+    categories: {
+        type: Array,
+        default: () => [],
+    },
+});
+
 const form = useForm({
+    category_id: null,
     name: '',
     description: '',
     price: '',
+    stock: 10,
     image: null,
     is_active: true,
 });
@@ -39,6 +48,7 @@ const submit = () => {
             <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 sm:p-8">
                 <ProductForm
                     :form="form"
+                    :categories="categories"
                     :is-edit="false"
                     @submit="submit"
                 >

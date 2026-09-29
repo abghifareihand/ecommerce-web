@@ -74,7 +74,7 @@ const formatDate = (isoDate) => {
                         Katalog Produk &amp; Inventaris
                     </h2>
                     <p class="text-xs text-slate-500 mt-1">
-                        Kelola daftar produk, update harga, visibilitas etalase, dan stok barang dagangan toko.
+                        Kelola daftar produk, kategori, update harga, visibilitas etalase, dan sisa stok barang dagangan toko.
                     </p>
                 </div>
 
@@ -100,7 +100,9 @@ const formatDate = (isoDate) => {
                             <thead>
                                 <tr class="bg-slate-50/75 border-b border-slate-200/80 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                     <th class="py-3.5 px-6">PRODUK</th>
+                                    <th class="py-3.5 px-6">KATEGORI</th>
                                     <th class="py-3.5 px-6">HARGA</th>
+                                    <th class="py-3.5 px-6">STOK</th>
                                     <th class="py-3.5 px-6">STATUS</th>
                                     <th class="py-3.5 px-6">TANGGAL DIBUAT</th>
                                     <th class="py-3.5 px-6 text-right">AKSI</th>
@@ -131,9 +133,41 @@ const formatDate = (isoDate) => {
                                         </div>
                                     </td>
 
+                                    <!-- Category -->
+                                    <td class="py-4 px-6">
+                                        <span
+                                            v-if="product.category"
+                                            class="inline-block px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/60"
+                                        >
+                                            {{ product.category.name }}
+                                        </span>
+                                        <span v-else class="text-xs text-slate-400 italic">
+                                            -
+                                        </span>
+                                    </td>
+
                                     <!-- Price -->
                                     <td class="py-4 px-6 font-semibold text-slate-900">
                                         {{ formatRupiah(product.price) }}
+                                    </td>
+
+                                    <!-- Stock -->
+                                    <td class="py-4 px-6">
+                                        <span v-if="product.stock > 10" class="font-bold text-slate-800">
+                                            {{ product.stock }} pcs
+                                        </span>
+                                        <span
+                                            v-else-if="product.stock > 0"
+                                            class="inline-flex items-center gap-1 font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 text-xs"
+                                        >
+                                            Sisa {{ product.stock }} pcs
+                                        </span>
+                                        <span
+                                            v-else
+                                            class="inline-flex items-center gap-1 font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded-md border border-red-200 text-xs"
+                                        >
+                                            Habis (0)
+                                        </span>
                                     </td>
 
                                     <!-- Status -->
@@ -199,7 +233,7 @@ const formatDate = (isoDate) => {
                         <template #action>
                             <Link href="/admin/products/create">
                                 <Button variant="primary">
-                                    Tambah Produk Pertama
+                                    Tambah Produk Sekarang
                                 </Button>
                             </Link>
                         </template>
@@ -209,35 +243,41 @@ const formatDate = (isoDate) => {
         </div>
 
         <!-- Delete Confirmation Modal -->
-        <Modal :show="confirmDeleteModal" @close="closeDeleteModal" maxWidth="md">
-            <div class="p-6">
-                <div class="flex items-center gap-4">
-                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-slate-900">Hapus Produk?</h3>
-                        <p class="text-xs text-slate-500 mt-0.5">Tindakan ini tidak dapat dibatalkan.</p>
-                    </div>
-                </div>
-
-                <div class="mt-4 text-sm text-slate-600">
-                    Apakah Anda yakin ingin menghapus
-                    <span class="font-bold text-slate-900">"{{ productToDelete?.name }}"</span>?
-                    Foto dan data produk ini akan dihapus secara permanen dari sistem.
-                </div>
-
-                <div class="mt-6 flex items-center justify-end gap-3">
-                    <Button variant="secondary" @click="closeDeleteModal" :disabled="deleting">
-                        Batal
-                    </Button>
-                    <Button variant="danger" @click="confirmDelete" :loading="deleting" :disabled="deleting">
-                        Hapus Produk
-                    </Button>
-                </div>
+        <Modal
+            :show="confirmDeleteModal"
+            title="Konfirmasi Hapus Produk"
+            @close="closeDeleteModal"
+        >
+            <div class="space-y-3">
+                <p class="text-sm text-slate-600">
+                    Apakah Anda yakin ingin menghapus produk
+                    <strong class="text-slate-900 font-semibold">
+                        "{{ productToDelete?.name }}"
+                    </strong>?
+                </p>
+                <p class="text-xs text-rose-600 bg-rose-50 p-3 rounded-lg border border-rose-200">
+                    Tindakan ini tidak dapat dibatalkan. Gambar dan data produk akan dihapus secara permanen dari server.
+                </p>
             </div>
+
+            <template #footer>
+                <Button
+                    type="button"
+                    variant="secondary"
+                    :disabled="deleting"
+                    @click="closeDeleteModal"
+                >
+                    Batal
+                </Button>
+                <Button
+                    type="button"
+                    variant="danger"
+                    :loading="deleting"
+                    @click="confirmDelete"
+                >
+                    Ya, Hapus Produk
+                </Button>
+            </template>
         </Modal>
     </AdminLayout>
 </template>

@@ -16,7 +16,7 @@ const formatRupiah = (value) => {
 
     <ShopLayout>
         <!-- Page Header -->
-        <div class="bg-white border-b border-slate-200/80 py-8">
+        <div class="bg-white py-6 sm:py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                     Keranjang Belanja

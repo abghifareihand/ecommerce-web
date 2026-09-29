@@ -15,21 +15,23 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    store: {
+        type: Object,
+        default: null,
+    },
 });
 
 const cart = useCart();
 const quantity = ref(1);
 const showAddedToast = ref(false);
 
-const incrementQty = () => {
-    quantity.value++;
-};
+const isOutOfStock = computed(() => {
+    return props.product.stock <= 0;
+});
 
-const decrementQty = () => {
-    if (quantity.value > 1) {
-        quantity.value--;
-    }
-};
+const maxQuantity = computed(() => {
+    return Math.max(1, props.product.stock || 1);
+});
 
 const formatRupiah = (value) => {
     return 'Rp ' + Number(value).toLocaleString('id-ID');
@@ -40,6 +42,7 @@ const totalPrice = computed(() => {
 });
 
 const handleAddToCart = () => {
+    if (isOutOfStock.value) return;
     cart.addItem(props.product, quantity.value);
     showAddedToast.value = true;
     setTimeout(() => {
@@ -48,13 +51,23 @@ const handleAddToCart = () => {
 };
 
 const handleBuyNow = () => {
+    if (isOutOfStock.value) return;
     cart.addItem(props.product, quantity.value);
     router.visit('/checkout');
 };
 </script>
 
 <template>
-    <Head :title="`${product.name} - ${$page.props.store?.name || 'EcoStore'}`" />
+    <Head :title="`${product.name} - ${store?.name || $page.props.store?.name || 'EcoStore'}`">
+        <meta name="description" :content="product.description || `Beli ${product.name} berkualitas di ${store?.name || 'EcoStore'}.`" />
+        <!-- OpenGraph Meta Tags for WhatsApp & Social Media Preview Cards -->
+        <meta property="og:type" content="product" />
+        <meta property="og:title" :content="`${product.name} - ${store?.name || $page.props.store?.name || 'EcoStore'}`" />
+        <meta property="og:description" :content="product.description || `Pilihan kriya ramah lingkungan ${product.name} di ${store?.name || 'EcoStore'}.`" />
+        <meta property="og:image" :content="product.image_url" />
+        <meta property="og:price:amount" :content="product.price" />
+        <meta property="og:price:currency" content="IDR" />
+    </Head>
 
     <ShopLayout>
         <!-- Added Notification Toast -->
@@ -91,12 +104,18 @@ const handleBuyNow = () => {
         </transition>
 
         <!-- Breadcrumbs -->
-        <div class="bg-white border-b border-slate-200/80">
+        <div class="bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
                 <nav class="flex items-center gap-2 text-xs font-medium text-slate-500">
                     <Link href="/" class="hover:text-emerald-600 transition-colors">Home</Link>
                     <span>/</span>
                     <Link href="/products" class="hover:text-emerald-600 transition-colors">Katalog Produk</Link>
+                    <template v-if="product.category">
+                        <span>/</span>
+                        <Link :href="`/products?category=${product.category.slug}`" class="hover:text-emerald-600 transition-colors">
+                            {{ product.category.name }}
+                        </Link>
+                    </template>
                     <span>/</span>
                     <span class="text-slate-800 font-semibold truncate">{{ product.name }}</span>
                 </nav>
@@ -114,9 +133,12 @@ const handleBuyNow = () => {
                             :alt="product.name"
                             class="h-full w-full object-cover"
                         />
-                        <div class="absolute top-4 left-4">
+                        <div class="absolute top-4 left-4 flex flex-col gap-2">
                             <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-600 text-white shadow-sm">
                                 100% Produk Original
+                            </span>
+                            <span v-if="product.category" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-900/90 text-white backdrop-blur-xs shadow-sm">
+                                {{ product.category.name }}
                             </span>
                         </div>
                     </div>
@@ -125,9 +147,17 @@ const handleBuyNow = () => {
                 <!-- Product Purchase Panel -->
                 <div class="flex flex-col bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs">
                     <div class="flex items-center gap-2 mb-3">
-                        <Badge variant="success">
+                        <Badge v-if="!isOutOfStock && product.stock > 5" variant="success">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                            Stok Tersedia
+                            Stok Tersedia ({{ product.stock }} pcs)
+                        </Badge>
+                        <Badge v-else-if="!isOutOfStock" variant="warning">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                            Sisa {{ product.stock }} pcs (Segera Habis!)
+                        </Badge>
+                        <Badge v-else variant="danger">
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                            Stok Habis
                         </Badge>
                         <span class="text-xs text-slate-400">• Terjual 50+ pcs</span>
                     </div>
@@ -153,39 +183,48 @@ const handleBuyNow = () => {
                     </div>
 
                     <!-- Quantity Picker -->
-                    <div class="mt-6 flex items-center justify-between border-y border-slate-100 py-4">
+                    <div v-if="!isOutOfStock" class="mt-6 flex items-center justify-between border-y border-slate-100 py-4">
                         <div>
                             <span class="text-sm font-bold text-slate-800 block">Jumlah Pesanan</span>
-                            <span class="text-xs text-slate-400">Atur kuantiti produk yang ingin dipesan</span>
+                            <span class="text-xs text-slate-400">Maksimal {{ product.stock }} pcs per order</span>
                         </div>
 
                         <QuantityStepper
                             v-model="quantity"
                             :min="1"
+                            :max="maxQuantity"
                             size="md"
                         />
                     </div>
 
                     <!-- Action Buttons -->
                     <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <button
-                            type="button"
-                            @click="handleAddToCart"
-                            class="w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl font-bold text-sm bg-white text-emerald-700 border-2 border-emerald-600 hover:bg-emerald-50 active:scale-98 transition-all shadow-xs cursor-pointer"
-                        >
-                            <svg class="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                            + Masukkan Keranjang
-                        </button>
+                        <template v-if="!isOutOfStock">
+                            <button
+                                type="button"
+                                @click="handleAddToCart"
+                                class="w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl font-bold text-sm bg-white text-emerald-700 border-2 border-emerald-600 hover:bg-emerald-50 active:scale-98 transition-all shadow-xs cursor-pointer"
+                            >
+                                <svg class="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                + Masukkan Keranjang
+                            </button>
 
-                        <button
-                            type="button"
-                            @click="handleBuyNow"
-                            class="w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl font-bold text-sm bg-emerald-600 text-white hover:bg-emerald-700 active:scale-98 transition-all shadow-md shadow-emerald-600/25 cursor-pointer"
-                        >
-                            Beli Sekarang &rarr;
-                        </button>
+                            <button
+                                type="button"
+                                @click="handleBuyNow"
+                                class="w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl font-bold text-sm bg-emerald-600 text-white hover:bg-emerald-700 active:scale-98 transition-all shadow-md shadow-emerald-600/25 cursor-pointer"
+                            >
+                                Beli Sekarang &rarr;
+                            </button>
+                        </template>
+                        <template v-else>
+                            <div class="sm:col-span-2 p-4 rounded-2xl bg-red-50 border border-red-200 text-center">
+                                <p class="text-sm font-bold text-red-700">Maaf, persediaan produk ini sedang kosong.</p>
+                                <p class="text-xs text-red-500 mt-1">Silakan cek kembali secara berkala atau hubungi admin via WhatsApp untuk pre-order.</p>
+                            </div>
+                        </template>
                     </div>
 
                     <!-- Description Accordion / Detail Content -->
@@ -229,6 +268,14 @@ const handleBuyNow = () => {
                         <Link :href="`/products/${related.slug}`" class="block aspect-4/3 rounded-xl overflow-hidden bg-slate-100 mb-3">
                             <img :src="related.image_url" :alt="related.name" class="w-full h-full object-cover" />
                         </Link>
+                        <div class="flex items-center justify-between gap-1 mb-1">
+                            <span v-if="related.category" class="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md">
+                                {{ related.category.name }}
+                            </span>
+                            <span class="text-[10px] text-slate-400 font-medium">
+                                Stok: {{ related.stock }}
+                            </span>
+                        </div>
                         <h4 class="font-bold text-slate-900 text-sm line-clamp-1">
                             <Link :href="`/products/${related.slug}`" class="hover:text-emerald-600">
                                 {{ related.name }}

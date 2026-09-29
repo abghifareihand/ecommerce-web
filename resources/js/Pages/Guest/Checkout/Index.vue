@@ -101,7 +101,7 @@ const handleCheckout = async () => {
 
     <ShopLayout>
         <!-- Page Header -->
-        <div class="bg-white border-b border-slate-200/80 py-8">
+        <div class="bg-white py-6 sm:py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <nav class="flex items-center gap-2 text-xs font-medium text-slate-500 mb-2">
                     <Link href="/" class="hover:text-emerald-600">Home</Link>

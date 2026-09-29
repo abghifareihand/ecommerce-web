@@ -2,10 +2,12 @@
 
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\BannerController as AdminBannerController;
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\StoreSettingController as AdminStoreSettingController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\OrderController as StorefrontOrderController;
@@ -29,9 +31,15 @@ Route::get('/products', [StorefrontProductController::class, 'index'])->name('pr
 Route::get('/products/{product:slug}', [StorefrontProductController::class, 'show'])->name('products.show');
 Route::get('/cart', fn () => Inertia::render('Guest/Cart/Index'))->name('cart.index');
 Route::get('/checkout', fn () => Inertia::render('Guest/Checkout/Index'))->name('checkout.index');
-Route::post('/orders', [StorefrontOrderController::class, 'store'])->name('orders.store');
-Route::get('/orders/track/{order_number?}', [StorefrontOrderController::class, 'track'])->name('orders.track');
-Route::get('/orders/{order:order_number}/invoice', [StorefrontOrderController::class, 'invoice'])->name('orders.invoice');
+Route::post('/orders', [StorefrontOrderController::class, 'store'])
+    ->middleware('throttle:15,1')
+    ->name('orders.store');
+Route::get('/orders/track/{order_number?}', [StorefrontOrderController::class, 'track'])
+    ->middleware('throttle:30,1')
+    ->name('orders.track');
+Route::get('/orders/{order:order_number}/invoice', [StorefrontOrderController::class, 'invoice'])
+    ->middleware('throttle:20,1')
+    ->name('orders.invoice');
 
 /*
 |--------------------------------------------------------------------------
@@ -40,7 +48,9 @@ Route::get('/orders/{order:order_number}/invoice', [StorefrontOrderController::c
 */
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [AdminAuthController::class, 'create'])->name('login');
-    Route::post('/login', [AdminAuthController::class, 'store'])->name('login.store');
+    Route::post('/login', [AdminAuthController::class, 'store'])
+        ->middleware('throttle:10,1')
+        ->name('login.store');
     Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('logout');
 
     /*
@@ -62,6 +72,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::delete('/{product}', [AdminProductController::class, 'destroy'])->name('destroy');
         });
 
+        // Categories Management
+        Route::prefix('categories')->name('categories.')->group(function () {
+            Route::get('/', [AdminCategoryController::class, 'index'])->name('index');
+            Route::get('/create', [AdminCategoryController::class, 'create'])->name('create');
+            Route::post('/', [AdminCategoryController::class, 'store'])->name('store');
+            Route::post('/reorder', [AdminCategoryController::class, 'reorder'])->name('reorder');
+            Route::get('/{category}/edit', [AdminCategoryController::class, 'edit'])->name('edit');
+            Route::put('/{category}', [AdminCategoryController::class, 'update'])->name('update');
+            Route::delete('/{category}', [AdminCategoryController::class, 'destroy'])->name('destroy');
+        });
+
         // Orders Management & PDF Invoices
         Route::prefix('orders')->name('orders.')->group(function () {
             Route::get('/', [AdminOrderController::class, 'index'])->name('index');
@@ -70,6 +91,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::delete('/{order}', [AdminOrderController::class, 'destroy'])->name('destroy');
             Route::get('/{order}/pdf', [AdminOrderController::class, 'downloadPdf'])->name('pdf');
             Route::get('/{order}/pdf/stream', [AdminOrderController::class, 'streamPdf'])->name('pdf.stream');
+        });
+
+        // Sales Reports & Export
+        Route::prefix('reports')->name('reports.')->group(function () {
+            Route::get('/', [AdminReportController::class, 'index'])->name('index');
+            Route::get('/export', [AdminReportController::class, 'export'])->name('export');
         });
 
         // Banners Management

@@ -372,8 +372,14 @@ const confirmDelete = () => {
                                 v-model="statusForm.status"
                                 :options="statusOptions"
                                 :full-width="true"
-                                button-class="w-full text-xs font-semibold rounded-xl py-2"
-                            />
+                                :show-dot="true"
+                            >
+                                <template #icon>
+                                    <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </template>
+                            </CustomDropdown>
                             <Button
                                 type="button"
                                 variant="secondary"
@@ -403,12 +409,10 @@ const confirmDelete = () => {
                                 <Input
                                     id="shipping_cost"
                                     label="Ongkos Kirim (Rp)"
-                                    type="number"
-                                    min="0"
-                                    step="1000"
+                                    is-currency
                                     v-model="statusForm.shipping_cost"
                                     :error="statusForm.errors.shipping_cost"
-                                    placeholder="0"
+                                    placeholder="cth: 15.000"
                                     hint="Masukkan nominal ongkos kirim hasil cek kurir."
                                 />
                             </div>

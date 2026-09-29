@@ -12,16 +12,11 @@ import { Link } from '@inertiajs/vue3';
                     <Link href="/" class="flex items-center gap-2.5 sm:gap-3 group min-w-0">
                         <div class="relative flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-lg bg-white border border-slate-200/80 shadow-xs group-hover:scale-105 transition-transform overflow-hidden shrink-0">
                             <img
-                                v-if="$page.props.store?.logo_url"
-                                :src="$page.props.store.logo_url"
+                                :src="$page.props.store?.logo_url || '/assets/img/logo.png'"
                                 :alt="$page.props.store?.name || 'Logo'"
                                 class="w-full h-full object-cover object-center"
+                                @error="$event.target.src = '/assets/img/logo.png'"
                             />
-                            <div v-else class="w-full h-full bg-linear-to-br from-emerald-500 to-emerald-700 flex items-center justify-center text-white font-bold">
-                                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                                </svg>
-                            </div>
                         </div>
                         <span class="text-lg sm:text-2xl font-extrabold tracking-tight text-slate-900 group-hover:text-emerald-700 transition-colors truncate">
                             {{ $page.props.store?.name || 'EcoStore' }}

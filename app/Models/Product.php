@@ -18,10 +18,12 @@ class Product extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'category_id',
         'name',
         'slug',
         'description',
         'price',
+        'stock',
         'image',
         'is_active',
     ];
@@ -35,8 +37,17 @@ class Product extends Model
     {
         return [
             'price' => 'decimal:2',
+            'stock' => 'integer',
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * Get the category that owns the product.
+     */
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 
     /**

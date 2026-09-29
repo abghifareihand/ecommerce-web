@@ -9,7 +9,7 @@ const props = defineProps({
     options: {
         type: Array,
         required: true,
-        // Each item: { value: String|Number, label: String }
+        // Each item: { value: String|Number, label: String, dotClass?: String }
     },
     placeholder: {
         type: String,
@@ -28,6 +28,10 @@ const props = defineProps({
         default: '',
     },
     fullWidth: {
+        type: Boolean,
+        default: true,
+    },
+    showDot: {
         type: Boolean,
         default: true,
     },
@@ -97,17 +101,27 @@ onBeforeUnmount(() => {
             type="button"
             @click="toggleDropdown"
             :class="[
-                'inline-flex items-center justify-between gap-3 w-full bg-white px-3.5 py-2.5 text-sm font-medium rounded-xl transition-all cursor-pointer select-none',
+                'w-full flex items-center justify-between gap-2.5 bg-white px-3.5 py-2.5 text-sm font-medium rounded-xl transition-all cursor-pointer select-none ring-1 ring-inset shadow-xs text-left',
                 isOpen
-                    ? 'border border-emerald-600 ring-2 ring-emerald-600/20 text-slate-900 shadow-xs'
-                    : 'border border-emerald-600 text-slate-800 shadow-xs hover:bg-slate-50/50',
+                    ? 'ring-2 ring-emerald-600 text-slate-900 border-transparent bg-white'
+                    : 'ring-slate-300 hover:ring-slate-400 text-slate-800',
                 buttonClass,
             ]"
             :aria-expanded="isOpen"
         >
-            <span class="truncate">{{ displayLabel }}</span>
+            <div class="flex items-center gap-2.5 truncate">
+                <slot name="icon" />
+                <span
+                    class="truncate"
+                    :class="selectedOption ? 'font-medium text-slate-900' : 'text-slate-400 font-normal'"
+                >
+                    {{ displayLabel }}
+                </span>
+            </div>
+
+            <!-- Rotating Chevron Icon -->
             <svg
-                class="w-4 h-4 text-slate-600 shrink-0 transition-transform duration-200"
+                class="w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ml-2"
                 :class="{ 'rotate-180 text-emerald-600': isOpen }"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -119,17 +133,17 @@ onBeforeUnmount(() => {
 
         <!-- Dropdown Menu Panel -->
         <transition
-            enter-active-class="transition ease-out duration-150"
+            enter-active-class="transition duration-150 ease-out"
             enter-from-class="transform opacity-0 scale-95 -translate-y-1"
             enter-to-class="transform opacity-100 scale-100 translate-y-0"
-            leave-active-class="transition ease-in duration-100"
+            leave-active-class="transition duration-100 ease-in"
             leave-from-class="transform opacity-100 scale-100 translate-y-0"
             leave-to-class="transform opacity-0 scale-95 -translate-y-1"
         >
             <div
                 v-if="isOpen"
                 :class="[
-                    'absolute left-0 mt-1.5 min-w-[190px] w-full bg-white rounded-lg border border-slate-200 shadow-xl overflow-hidden py-1 z-50',
+                    'absolute left-0 mt-1.5 w-full rounded-xl bg-white shadow-xl ring-1 ring-black/5 border border-slate-100 py-1.5 max-h-72 overflow-y-auto focus:outline-none z-50',
                     panelClass,
                 ]"
             >
@@ -138,20 +152,33 @@ onBeforeUnmount(() => {
                     :key="opt.value"
                     type="button"
                     @click="selectOption(opt.value)"
-                    class="relative w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center cursor-pointer select-none group"
                     :class="[
+                        'w-full flex items-center justify-between px-3.5 py-2 text-sm transition-colors text-left cursor-pointer group select-none',
                         opt.value === modelValue
-                            ? 'text-slate-900 font-medium bg-slate-50/40'
-                            : 'text-slate-800 hover:bg-slate-50 hover:text-slate-900',
+                            ? 'bg-emerald-50 text-emerald-800 font-semibold'
+                            : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900 font-normal',
                     ]"
                 >
-                    <!-- Active indicator green bar on the left (matches user screenshot) -->
-                    <span
-                        v-if="opt.value === modelValue"
-                        class="absolute left-0 top-0 bottom-0 w-1 bg-emerald-600 rounded-r-xs"
-                    ></span>
+                    <div class="flex items-center gap-2.5 truncate">
+                        <!-- Dot Indicator -->
+                        <span
+                            v-if="showDot"
+                            class="w-2 h-2 rounded-full shrink-0"
+                            :class="opt.dotClass || 'bg-emerald-500'"
+                        ></span>
+                        <span class="truncate">{{ opt.label }}</span>
+                    </div>
 
-                    <span class="truncate pl-0.5">{{ opt.label }}</span>
+                    <!-- Selected Checkmark SVG (same as Gambar 2) -->
+                    <svg
+                        v-if="opt.value === modelValue"
+                        class="w-4 h-4 text-emerald-600 shrink-0 ml-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                    </svg>
                 </button>
             </div>
         </transition>

@@ -46,20 +46,14 @@ class StoreSetting extends Model
                 return asset(ltrim($this->logo, '/'));
             }
 
-            return Storage::disk('public')->url($this->logo);
+            if (Storage::disk('public')->exists($this->logo)) {
+                return Storage::disk('public')->url($this->logo);
+            }
         }
 
-        // Fallback to default asset image if present in public/assets/img/
+        // Always fallback to default asset image from public/assets/img/logo.png
         if (file_exists(public_path('assets/img/logo.png'))) {
             return asset('assets/img/logo.png');
-        }
-
-        if (file_exists(public_path('assets/img/logo.svg'))) {
-            return asset('assets/img/logo.svg');
-        }
-
-        if (file_exists(public_path('assets/img/logo.jpg'))) {
-            return asset('assets/img/logo.jpg');
         }
 
         return null;

@@ -64,6 +64,7 @@ class AdminProductTest extends TestCase
             'name' => 'Natural Oak Shelf',
             'description' => 'A clean modern wooden shelf.',
             'price' => 89.99,
+            'stock' => 20,
             'image' => $file,
             'is_active' => 1,
         ]);
@@ -75,6 +76,7 @@ class AdminProductTest extends TestCase
             'name' => 'Natural Oak Shelf',
             'slug' => 'natural-oak-shelf',
             'price' => 89.99,
+            'stock' => 20,
             'is_active' => true,
         ]);
 
@@ -88,12 +90,14 @@ class AdminProductTest extends TestCase
         $product = Product::factory()->create([
             'name' => 'Old Product Name',
             'price' => 50.00,
+            'stock' => 10,
         ]);
 
         $response = $this->actingAs($this->admin)->put("/admin/products/{$product->id}", [
             'name' => 'Updated Product Name',
             'description' => 'Updated description content.',
             'price' => 65.50,
+            'stock' => 25,
             'is_active' => 1,
         ]);
 
@@ -104,6 +108,7 @@ class AdminProductTest extends TestCase
             'id' => $product->id,
             'name' => 'Updated Product Name',
             'price' => 65.50,
+            'stock' => 25,
         ]);
     }
 

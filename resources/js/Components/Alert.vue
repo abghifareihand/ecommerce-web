@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue';
 
 const props = defineProps({
     variant: {
@@ -14,39 +14,76 @@ const props = defineProps({
         type: Boolean,
         default: true,
     },
+    duration: {
+        type: Number,
+        default: 4000, // 4 seconds auto-dismiss (0 to disable)
+    },
 });
 
+const emit = defineEmits(['dismiss']);
+
 const dismissed = ref(false);
+let timer = null;
+
+const startTimer = () => {
+    if (props.duration > 0) {
+        clearTimer();
+        timer = setTimeout(() => {
+            dismiss();
+        }, props.duration);
+    }
+};
+
+const clearTimer = () => {
+    if (timer) {
+        clearTimeout(timer);
+        timer = null;
+    }
+};
+
+const dismiss = () => {
+    clearTimer();
+    dismissed.value = true;
+    emit('dismiss');
+};
+
+onMounted(() => {
+    startTimer();
+});
+
+onBeforeUnmount(() => {
+    clearTimer();
+});
 
 const variantConfig = computed(() => {
     switch (props.variant) {
         case 'success':
             return {
-                container: 'bg-emerald-50 border-emerald-200 text-emerald-800',
+                container: 'bg-emerald-50/95 border-emerald-200 text-emerald-800 shadow-xs',
                 iconColor: 'text-emerald-500',
                 buttonHover: 'hover:bg-emerald-100 text-emerald-600',
             };
         case 'danger':
             return {
-                container: 'bg-rose-50 border-rose-200 text-rose-800',
+                container: 'bg-rose-50/95 border-rose-200 text-rose-800 shadow-xs',
                 iconColor: 'text-rose-500',
                 buttonHover: 'hover:bg-rose-100 text-rose-600',
             };
         case 'warning':
             return {
-                container: 'bg-amber-50 border-amber-200 text-amber-800',
+                container: 'bg-amber-50/95 border-amber-200 text-amber-800 shadow-xs',
                 iconColor: 'text-amber-500',
                 buttonHover: 'hover:bg-amber-100 text-amber-600',
             };
         case 'info':
             return {
-                container: 'bg-sky-50 border-sky-200 text-sky-800',
+                container: 'bg-sky-50/95 border-sky-200 text-sky-800 shadow-xs',
                 iconColor: 'text-sky-500',
                 buttonHover: 'hover:bg-sky-100 text-sky-600',
             };
         default:
             return {
-                container: 'bg-emerald-50 border-emerald-200 text-emerald-800',
+                container: 'bg-emerald-50/95 border-emerald-200 text-emerald-800 shadow-xs',
                 iconColor: 'text-emerald-500',
                 buttonHover: 'hover:bg-emerald-100 text-emerald-600',
             };
@@ -62,6 +99,8 @@ const variantConfig = computed(() => {
             variantConfig.container
         ]"
         role="alert"
+        @mouseenter="clearTimer"
+        @mouseleave="startTimer"
     >
         <!-- Icon -->
         <div class="shrink-0 mt-0.5" :class="variantConfig.iconColor">
@@ -91,7 +130,7 @@ const variantConfig = computed(() => {
         <button
             v-if="dismissible"
             type="button"
-            @click="dismissed = true"
+            @click="dismiss"
             :class="[
                 'shrink-0 p-1 -mr-1 -mt-1 rounded-lg transition-colors cursor-pointer',
                 variantConfig.buttonHover

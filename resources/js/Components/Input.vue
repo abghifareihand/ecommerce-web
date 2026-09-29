@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, nextTick } from 'vue';
 
 const props = defineProps({
     modelValue: {
@@ -17,6 +17,10 @@ const props = defineProps({
     type: {
         type: String,
         default: 'text',
+    },
+    isCurrency: {
+        type: Boolean,
+        default: false,
     },
     placeholder: {
         type: String,
@@ -48,16 +52,81 @@ const props = defineProps({
     },
 });
 
-defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue']);
 
 const showPassword = ref(false);
 
+const isCurrencyMode = computed(() => {
+    return props.isCurrency || props.type === 'currency';
+});
+
 const computedType = computed(() => {
+    if (isCurrencyMode.value) {
+        return 'text';
+    }
     if (props.type === 'password') {
         return showPassword.value ? 'text' : 'password';
     }
     return props.type;
 });
+
+const displayValue = computed(() => {
+    if (isCurrencyMode.value) {
+        if (props.modelValue === '' || props.modelValue === null || props.modelValue === undefined) {
+            return '';
+        }
+        const clean = String(props.modelValue).replace(/[^0-9]/g, '');
+        if (!clean) return '';
+        return Number(clean).toLocaleString('id-ID');
+    }
+    return props.modelValue;
+});
+
+const handleInput = (e) => {
+    if (!isCurrencyMode.value) {
+        emit('update:modelValue', e.target.value);
+        return;
+    }
+
+    const input = e.target;
+    const originalValue = input.value;
+    const originalCursor = input.selectionStart || 0;
+
+    // Count how many digits were before the cursor
+    const digitsBeforeCursor = originalValue.slice(0, originalCursor).replace(/[^0-9]/g, '').length;
+
+    // Extract digits only
+    const rawDigits = originalValue.replace(/[^0-9]/g, '');
+
+    if (!rawDigits) {
+        input.value = '';
+        emit('update:modelValue', '');
+        return;
+    }
+
+    // Format with dots according to Indonesian locale
+    const formatted = Number(rawDigits).toLocaleString('id-ID');
+    input.value = formatted;
+
+    emit('update:modelValue', Number(rawDigits));
+
+    // Restore cursor position based on digit count
+    nextTick(() => {
+        let newCursor = 0;
+        let countedDigits = 0;
+        for (let i = 0; i < formatted.length; i++) {
+            if (/[0-9]/.test(formatted[i])) {
+                countedDigits++;
+            }
+            if (countedDigits >= digitsBeforeCursor) {
+                newCursor = i + 1;
+                break;
+            }
+        }
+        if (newCursor === 0) newCursor = formatted.length;
+        input.setSelectionRange(newCursor, newCursor);
+    });
+};
 
 const togglePassword = () => {
     showPassword.value = !showPassword.value;
@@ -79,13 +148,14 @@ const togglePassword = () => {
             <input
                 :id="id"
                 :type="computedType"
+                :inputmode="isCurrencyMode ? 'numeric' : undefined"
                 :step="step"
                 :min="min"
-                :value="modelValue"
+                :value="displayValue"
                 :placeholder="placeholder"
                 :disabled="disabled"
                 :required="required"
-                @input="$emit('update:modelValue', $event.target.value)"
+                @input="handleInput"
                 :class="[
                     'block w-full rounded-lg px-3.5 py-2 text-sm text-slate-900 transition-colors placeholder:text-slate-400 bg-white ring-1 ring-inset focus:ring-2 focus:ring-inset focus:outline-none',
                     type === 'password' ? 'pr-10' : '',

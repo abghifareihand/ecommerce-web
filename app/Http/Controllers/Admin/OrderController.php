@@ -125,6 +125,12 @@ class OrderController extends Controller
      */
     public function updateStatus(Request $request, Order $order): RedirectResponse
     {
+        if ($request->has('shipping_cost') && is_string($request->shipping_cost)) {
+            $request->merge([
+                'shipping_cost' => (float) str_replace(['.', ','], ['', '.'], $request->shipping_cost),
+            ]);
+        }
+
         $validated = $request->validate([
             'status' => ['required', 'in:pending,payment_pending,processing,confirmed,shipped,completed,cancelled'],
             'shipping_cost' => ['nullable', 'numeric', 'min:0'],

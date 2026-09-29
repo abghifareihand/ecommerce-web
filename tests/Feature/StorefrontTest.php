@@ -65,4 +65,36 @@ class StorefrontTest extends TestCase
 
         $response->assertStatus(404);
     }
+
+    public function test_product_catalog_can_filter_by_category(): void
+    {
+        $categoryA = \App\Models\Category::create([
+            'name' => 'Kriya Kayu',
+            'slug' => 'kriya-kayu',
+        ]);
+
+        $categoryB = \App\Models\Category::create([
+            'name' => 'Tekstil Tenun',
+            'slug' => 'tekstil-tenun',
+        ]);
+
+        Product::factory()->create([
+            'category_id' => $categoryA->id,
+            'is_active' => true,
+        ]);
+
+        Product::factory()->create([
+            'category_id' => $categoryB->id,
+            'is_active' => true,
+        ]);
+
+        $response = $this->get('/products?category=kriya-kayu');
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Guest/Products/Index')
+            ->has('products.data', 1)
+            ->where('filters.category', 'kriya-kayu')
+        );
+    }
 }

@@ -1,71 +1,58 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import AdminLayout from '../../../Layouts/AdminLayout.vue';
-import ProductForm from '../../../Components/ProductForm.vue';
+import CategoryForm from '../../../Components/CategoryForm.vue';
 import Button from '../../../Components/Button.vue';
 
 const props = defineProps({
-    product: {
+    category: {
         type: Object,
         required: true,
-    },
-    categories: {
-        type: Array,
-        default: () => [],
     },
 });
 
 const form = useForm({
-    category_id: props.product.category_id || null,
-    name: props.product.name,
-    description: props.product.description || '',
-    price: props.product.price,
-    stock: props.product.stock ?? 0,
-    image: null,
-    is_active: Boolean(props.product.is_active),
+    name: props.category.name,
+    description: props.category.description || '',
 });
 
 const submit = () => {
-    form.transform((data) => ({
-        ...data,
-        _method: 'put',
-    })).post(`/admin/products/${props.product.id}`);
+    form.put(`/admin/categories/${props.category.id}`);
 };
 </script>
 
 <template>
-    <Head :title="`Edit Produk: ${product.name} - Admin`" />
+    <Head :title="`Edit Kategori: ${category.name} - Admin`" />
 
-    <AdminLayout :title="`Edit Produk`">
+    <AdminLayout title="Edit Kategori">
         <div class="w-full">
             <!-- Header with Back Link -->
             <div class="mb-6 flex items-center justify-between">
                 <div>
                     <Link
-                        href="/admin/products"
+                        href="/admin/categories"
                         class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-emerald-700 transition-colors"
                     >
-                        &larr; Kembali ke Katalog Produk
+                        &larr; Kembali ke Daftar Kategori
                     </Link>
-                    <h2 class="text-xl font-bold text-slate-900 mt-2">Perbarui Informasi Produk</h2>
+                    <h2 class="text-xl font-bold text-slate-900 mt-2">Perbarui Informasi Kategori</h2>
+                    <p class="text-sm text-slate-500">Ubah nama atau urutan prioritas kategori <strong>{{ category.name }}</strong>.</p>
                 </div>
 
                 <div class="text-xs font-mono text-slate-400">
-                    ID: #{{ product.id }}
+                    ID: #{{ category.id }}
                 </div>
             </div>
 
             <!-- Form Card -->
             <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 sm:p-8">
-                <ProductForm
+                <CategoryForm
                     :form="form"
-                    :categories="categories"
                     :is-edit="true"
-                    :existing-image-url="product.image_url"
                     @submit="submit"
                 >
                     <template #actions>
-                        <Link href="/admin/products">
+                        <Link href="/admin/categories">
                             <Button variant="secondary" type="button">
                                 Batal
                             </Button>
@@ -79,7 +66,7 @@ const submit = () => {
                             Simpan Perubahan
                         </Button>
                     </template>
-                </ProductForm>
+                </CategoryForm>
             </div>
         </div>
     </AdminLayout>

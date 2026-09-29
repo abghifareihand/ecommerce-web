@@ -210,4 +210,85 @@ class OrderTest extends TestCase
         $response->assertSessionHas('error');
         $this->assertDatabaseHas('orders', ['id' => $order->id]);
     }
+
+    public function test_guest_cannot_order_inactive_product(): void
+    {
+        $inactiveProduct = Product::factory()->create([
+            'name' => 'Produk Nonaktif',
+            'price' => 100000,
+            'is_active' => false,
+        ]);
+
+        $response = $this->postJson('/orders', [
+            'customer_name' => 'Budi Pembeli',
+            'customer_phone' => '081234567891',
+            'customer_address' => 'Jl. Merdeka No. 1',
+            'items' => [
+                [
+                    'product_id' => $inactiveProduct->id,
+                    'quantity' => 1,
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJson([
+            'message' => 'Tidak ada produk valid yang dipesan.',
+        ]);
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_guest_cannot_order_more_than_available_stock(): void
+    {
+        $product = Product::factory()->create([
+            'name' => 'Produk Terbatas',
+            'price' => 50000,
+            'stock' => 2,
+            'is_active' => true,
+        ]);
+
+        $response = $this->postJson('/orders', [
+            'customer_name' => 'Citra Pembeli',
+            'customer_phone' => '081234567892',
+            'customer_address' => 'Jl. Diponegoro No. 10',
+            'items' => [
+                [
+                    'product_id' => $product->id,
+                    'quantity' => 5,
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJson([
+            'message' => "Stok produk 'Produk Terbatas' tidak mencukupi (sisa: 2 unit).",
+        ]);
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_order_placement_deducts_stock(): void
+    {
+        $product = Product::factory()->create([
+            'name' => 'Produk Tersedia',
+            'price' => 50000,
+            'stock' => 10,
+            'is_active' => true,
+        ]);
+
+        $response = $this->postJson('/orders', [
+            'customer_name' => 'Dedi Pembeli',
+            'customer_phone' => '081234567893',
+            'customer_address' => 'Jl. Sudirman No. 20',
+            'items' => [
+                [
+                    'product_id' => $product->id,
+                    'quantity' => 3,
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('orders', ['customer_name' => 'Dedi Pembeli']);
+        $this->assertEquals(7, $product->fresh()->stock);
+    }
 }

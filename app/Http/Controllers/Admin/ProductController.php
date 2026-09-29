@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreProductRequest;
 use App\Http\Requests\Admin\UpdateProductRequest;
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
@@ -20,6 +21,7 @@ class ProductController extends Controller
     public function index(): Response
     {
         $products = Product::query()
+            ->with('category')
             ->latest('id')
             ->paginate(10)
             ->withQueryString();
@@ -34,7 +36,9 @@ class ProductController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Admin/Products/Create');
+        return Inertia::render('Admin/Products/Create', [
+            'categories' => Category::orderBy('order')->get(),
+        ]);
     }
 
     /**
@@ -52,16 +56,18 @@ class ProductController extends Controller
         }
 
         Product::create([
+            'category_id' => $validated['category_id'] ?? null,
             'name' => $validated['name'],
             'slug' => $slug,
             'description' => $validated['description'] ?? null,
             'price' => $validated['price'],
+            'stock' => $validated['stock'] ?? 0,
             'image' => $imagePath,
             'is_active' => $request->boolean('is_active', true),
         ]);
 
         return redirect()->route('admin.products.index')
-            ->with('success', 'Product created successfully.');
+            ->with('success', 'Produk berhasil ditambahkan.');
     }
 
     /**
@@ -71,6 +77,7 @@ class ProductController extends Controller
     {
         return Inertia::render('Admin/Products/Edit', [
             'product' => $product,
+            'categories' => Category::orderBy('order')->get(),
         ]);
     }
 
@@ -96,16 +103,18 @@ class ProductController extends Controller
         }
 
         $product->update([
+            'category_id' => $validated['category_id'] ?? null,
             'name' => $validated['name'],
             'slug' => $slug,
             'description' => $validated['description'] ?? null,
             'price' => $validated['price'],
+            'stock' => $validated['stock'] ?? 0,
             'image' => $imagePath,
             'is_active' => $request->boolean('is_active', true),
         ]);
 
         return redirect()->route('admin.products.index')
-            ->with('success', 'Product updated successfully.');
+            ->with('success', 'Produk berhasil diperbarui.');
     }
 
     /**
@@ -120,23 +129,19 @@ class ProductController extends Controller
         $product->delete();
 
         return redirect()->route('admin.products.index')
-            ->with('success', 'Product deleted successfully.');
+            ->with('success', 'Produk berhasil dihapus.');
     }
 
     /**
-     * Generate a unique slug for a product.
+     * Generate a unique slug for the product.
      */
-    protected function generateUniqueSlug(string $name, ?int $exceptId = null): string
+    private function generateUniqueSlug(string $name, ?int $ignoreId = null): string
     {
         $slug = Str::slug($name);
         $originalSlug = $slug;
         $count = 1;
 
-        while (
-            Product::where('slug', $slug)
-                ->when($exceptId, fn ($query) => $query->where('id', '!=', $exceptId))
-                ->exists()
-        ) {
+        while (Product::where('slug', $slug)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists()) {
             $slug = "{$originalSlug}-{$count}";
             $count++;
         }
