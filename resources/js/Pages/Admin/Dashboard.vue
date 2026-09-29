@@ -122,8 +122,8 @@ const getStatusBadge = (status) => {
             <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
                 <div class="p-5 border-b border-slate-100 flex items-center justify-between">
                     <div>
-                        <h3 class="text-base font-bold text-slate-900">Pesanan Masuk Terbaru</h3>
-                        <p class="text-xs text-slate-400">Daftar checkout pelanggan via WhatsApp</p>
+                        <h3 class="text-base font-bold text-slate-900">Pesanan Masuk</h3>
+                        <p class="text-xs text-slate-400">Daftar checkout pelanggan</p>
                     </div>
                     <Link href="/admin/orders">
                         <Button variant="secondary" size="sm">

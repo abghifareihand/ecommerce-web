@@ -58,14 +58,21 @@ const formatDate = (isoDate) => {
 
 const getStatusBadge = (status) => {
     switch (status) {
+        case 'pending':
+            return { variant: 'warning', label: 'Pending (Cek Ongkir)' };
+        case 'payment_pending':
+            return { variant: 'warning', label: 'Menunggu Pembayaran' };
+        case 'processing':
         case 'confirmed':
             return { variant: 'info', label: 'Diproses' };
+        case 'shipped':
+            return { variant: 'purple', label: 'Sedang Dikirim' };
         case 'completed':
             return { variant: 'success', label: 'Selesai' };
         case 'cancelled':
             return { variant: 'danger', label: 'Dibatalkan' };
         default:
-            return { variant: 'warning', label: 'Menunggu' };
+            return { variant: 'warning', label: 'Pending' };
     }
 };
 
@@ -109,7 +116,7 @@ const confirmDelete = () => {
                 type="button"
                 @click="filterStatus('')"
                 :class="[
-                    'px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer',
+                    'px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer',
                     !filters.status
                         ? 'bg-emerald-600 text-white shadow-xs'
                         : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
@@ -121,31 +128,55 @@ const confirmDelete = () => {
                 type="button"
                 @click="filterStatus('pending')"
                 :class="[
-                    'px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer',
+                    'px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer',
                     filters.status === 'pending'
                         ? 'bg-amber-600 text-white shadow-xs'
                         : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
                 ]"
             >
-                Menunggu ({{ statusCounts.pending || 0 }})
+                Pending / Cek Ongkir ({{ statusCounts.pending || 0 }})
             </button>
             <button
                 type="button"
-                @click="filterStatus('confirmed')"
+                @click="filterStatus('payment_pending')"
                 :class="[
-                    'px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer',
-                    filters.status === 'confirmed'
+                    'px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer',
+                    filters.status === 'payment_pending'
+                        ? 'bg-orange-600 text-white shadow-xs'
+                        : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                ]"
+            >
+                Menunggu Bayar ({{ statusCounts.payment_pending || 0 }})
+            </button>
+            <button
+                type="button"
+                @click="filterStatus('processing')"
+                :class="[
+                    'px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer',
+                    filters.status === 'processing'
                         ? 'bg-sky-600 text-white shadow-xs'
                         : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
                 ]"
             >
-                Diproses ({{ statusCounts.confirmed || 0 }})
+                Diproses ({{ statusCounts.processing || 0 }})
+            </button>
+            <button
+                type="button"
+                @click="filterStatus('shipped')"
+                :class="[
+                    'px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer',
+                    filters.status === 'shipped'
+                        ? 'bg-purple-600 text-white shadow-xs'
+                        : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                ]"
+            >
+                Sedang Dikirim ({{ statusCounts.shipped || 0 }})
             </button>
             <button
                 type="button"
                 @click="filterStatus('completed')"
                 :class="[
-                    'px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer',
+                    'px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer',
                     filters.status === 'completed'
                         ? 'bg-emerald-600 text-white shadow-xs'
                         : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
@@ -157,7 +188,7 @@ const confirmDelete = () => {
                 type="button"
                 @click="filterStatus('cancelled')"
                 :class="[
-                    'px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer',
+                    'px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer',
                     filters.status === 'cancelled'
                         ? 'bg-rose-600 text-white shadow-xs'
                         : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
@@ -217,13 +248,26 @@ const confirmDelete = () => {
                                     <div class="font-bold text-slate-900">{{ order.customer_name }}</div>
                                     <div class="text-xs text-slate-400 font-mono">{{ order.customer_phone }}</div>
                                 </td>
-                                <td class="py-4 px-6 font-extrabold text-slate-900">
-                                    {{ formatRupiah(order.total_amount) }}
+                                <td class="py-4 px-6">
+                                    <div class="font-extrabold text-slate-900">
+                                        {{ formatRupiah(order.grand_total || (Number(order.total_amount) + Number(order.shipping_cost || 0))) }}
+                                    </div>
+                                    <div v-if="order.shipping_cost > 0" class="text-[11px] text-slate-400">
+                                        + Ongkir {{ formatRupiah(order.shipping_cost) }}
+                                    </div>
                                 </td>
                                 <td class="py-4 px-6">
                                     <Badge :variant="getStatusBadge(order.status).variant">
                                         {{ getStatusBadge(order.status).label }}
                                     </Badge>
+                                    <div v-if="order.courier || order.tracking_number" class="mt-1 flex items-center gap-1 flex-wrap">
+                                        <span v-if="order.courier" class="text-[10px] font-semibold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
+                                            {{ order.courier }}
+                                        </span>
+                                        <span v-if="order.tracking_number" class="text-[10px] font-mono text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200">
+                                            {{ order.tracking_number }}
+                                        </span>
+                                    </div>
                                 </td>
                                 <td class="py-4 px-6 text-right">
                                     <div class="flex items-center justify-end gap-2">

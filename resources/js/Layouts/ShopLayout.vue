@@ -19,23 +19,13 @@ const formatRupiah = (value) => {
 
 <template>
     <div class="min-h-screen flex flex-col bg-white text-slate-800 font-sans">
-        <!-- Top Micro Utility Bar -->
-        <div class="bg-emerald-900 text-emerald-100 text-xs py-2 px-4 border-b border-emerald-950">
-            <div class="max-w-7xl mx-auto flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
-                    <span>Toko Resmi {{ page.props.store?.name || 'EcoStore' }} — Layanan Pesanan via WhatsApp ({{ page.props.store?.phone || '+62 898-5454-555' }})</span>
-                </div>
-            </div>
-        </div>
-
         <!-- Main E-Commerce Navbar -->
         <header class="sticky top-0 z-40 bg-white border-b border-slate-200/90 shadow-sm">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-20 gap-4 sm:gap-8">
+                <div class="flex items-center justify-between h-16 sm:h-20 gap-3 sm:gap-8">
                     <!-- Store Brand -->
-                    <Link href="/products" class="flex items-center gap-3 shrink-0 group">
-                        <div class="relative flex h-11 w-11 items-center justify-center rounded-lg bg-white border border-slate-200/80 shadow-xs group-hover:scale-105 transition-transform overflow-hidden shrink-0">
+                    <Link href="/products" class="flex items-center gap-2.5 sm:gap-3 shrink-0 group min-w-0">
+                        <div class="relative flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-lg bg-white border border-slate-200/80 shadow-xs group-hover:scale-105 transition-transform overflow-hidden shrink-0">
                             <img
                                 v-if="page.props.store?.logo_url"
                                 :src="page.props.store.logo_url"
@@ -43,21 +33,18 @@ const formatRupiah = (value) => {
                                 class="w-full h-full object-cover object-center"
                             />
                             <div v-else class="w-full h-full bg-emerald-600 flex items-center justify-center text-white font-bold">
-                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                                 </svg>
                             </div>
                         </div>
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-xl font-extrabold tracking-tight text-slate-900 group-hover:text-emerald-700 transition-colors">
-                                    {{ page.props.store?.name || 'EcoStore' }}
-                                </span>
-                                <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800">
-                                    SHOP
-                                </span>
-                            </div>
-                            <span class="text-xs text-slate-400 font-medium">{{ page.props.store?.tagline || 'Aplikasi Belanja Online' }}</span>
+                        <div class="flex items-center gap-1.5 sm:gap-2 truncate">
+                            <span class="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900 group-hover:text-emerald-700 transition-colors truncate">
+                                {{ page.props.store?.name || 'EcoStore' }}
+                            </span>
+                            <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 shrink-0">
+                                SHOP
+                            </span>
                         </div>
                     </Link>
 
@@ -87,7 +74,7 @@ const formatRupiah = (value) => {
                         <!-- Shopping Cart Button (Icon + Badge Count only) -->
                         <Link
                             href="/cart"
-                            class="relative flex items-center justify-center h-11 w-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/25 transition-all transform hover:scale-105"
+                            class="relative flex items-center justify-center h-9 w-9 sm:h-11 sm:w-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/25 transition-all transform hover:scale-105 shrink-0"
                             title="Keranjang Belanja"
                             aria-label="Keranjang Belanja"
                         >
@@ -155,6 +142,7 @@ const formatRupiah = (value) => {
                 </div>
 
                 <div class="flex items-center gap-6">
+                    <Link href="/orders/track" class="hover:text-emerald-700 font-semibold">Lacak Pesanan</Link>
                     <Link href="/" class="hover:text-emerald-700 font-semibold">&larr; Kembali ke Beranda</Link>
                     <Link href="/admin/login" class="hover:text-slate-700">Akses Admin</Link>
                 </div>

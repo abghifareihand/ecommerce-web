@@ -51,7 +51,7 @@ const toggleStatus = (banner) => {
 <template>
     <Head title="Kelola Banner Promo - Admin" />
 
-    <AdminLayout title="Kelola Banner Promo Toko">
+    <AdminLayout title="Kelola Banner Promo">
         <div class="space-y-6">
             <!-- Header bar with Create button -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -73,7 +73,7 @@ const toggleStatus = (banner) => {
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
-                        <span>Tambah Banner Baru</span>
+                        <span>Tambah Banner</span>
                     </Button>
                 </Link>
             </div>

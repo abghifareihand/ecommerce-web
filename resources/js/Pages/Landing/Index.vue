@@ -26,16 +26,16 @@ import LandingLayout from '../../Layouts/LandingLayout.vue';
                         Dibuat dengan dedikasi pengrajin lokal untuk menghadirkan kualitas terbaik, alami, dan awet langsung ke genggaman Anda.
                     </p>
 
-                    <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
+                    <div class="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full">
                         <Link
                             href="/products"
-                            class="px-8 py-4 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-600/30 hover:shadow-xl hover:shadow-emerald-600/40 transition-all text-base transform hover:-translate-y-0.5"
+                            class="w-full sm:w-auto text-center px-6 py-3.5 sm:px-8 sm:py-4 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-600/30 hover:shadow-xl hover:shadow-emerald-600/40 transition-all text-sm sm:text-base transform hover:-translate-y-0.5"
                         >
                             Masuk ke Katalog Belanja &rarr;
                         </Link>
                         <a
                             href="#story"
-                            class="px-8 py-4 rounded-xl font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-all text-base shadow-xs"
+                            class="w-full sm:w-auto text-center px-6 py-3.5 sm:px-8 sm:py-4 rounded-xl font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-all text-sm sm:text-base shadow-xs"
                         >
                             Cerita Kami
                         </a>

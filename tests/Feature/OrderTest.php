@@ -75,14 +75,71 @@ class OrderTest extends TestCase
         $response->assertStatus(200);
 
         $updateResponse = $this->actingAs($admin)->put("/admin/orders/{$order->id}/status", [
-            'status' => 'confirmed',
+            'status' => 'shipped',
+            'shipping_cost' => 15000,
+            'courier' => 'J&T Express',
+            'tracking_number' => 'JT9988776655',
         ]);
 
         $updateResponse->assertRedirect();
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
-            'status' => 'confirmed',
+            'status' => 'shipped',
+            'shipping_cost' => 15000,
+            'courier' => 'J&T Express',
+            'tracking_number' => 'JT9988776655',
         ]);
+    }
+
+    public function test_guest_can_access_tracking_page_and_track_order(): void
+    {
+        $order = Order::create([
+            'order_number' => 'INV-20260929-8888',
+            'customer_name' => 'Dewi Sartika',
+            'customer_phone' => '08123456789',
+            'customer_address' => 'Yogyakarta',
+            'total_amount' => 120000,
+            'shipping_cost' => 10000,
+            'courier' => 'SiCepat',
+            'tracking_number' => 'SCP12345',
+            'status' => 'shipped',
+        ]);
+
+        // General track page
+        $response = $this->get('/orders/track');
+        $response->assertStatus(200);
+
+        // Track with order number in route parameter
+        $paramResponse = $this->get("/orders/track/{$order->order_number}");
+        $paramResponse->assertStatus(200);
+
+        // Track with query string search
+        $queryResponse = $this->get("/orders/track?q={$order->order_number}");
+        $queryResponse->assertStatus(200);
+    }
+
+    public function test_guest_can_download_order_invoice_pdf(): void
+    {
+        $order = Order::create([
+            'order_number' => 'INV-20260929-7777',
+            'customer_name' => 'Rahmat Hidayat',
+            'customer_phone' => '081234567890',
+            'customer_address' => 'Semarang',
+            'total_amount' => 95000,
+            'shipping_cost' => 12000,
+            'status' => 'processing',
+        ]);
+
+        $order->items()->create([
+            'product_name' => 'Sample Item',
+            'price' => 95000,
+            'quantity' => 1,
+            'subtotal' => 95000,
+        ]);
+
+        $response = $this->get("/orders/{$order->order_number}/invoice");
+        $response->assertStatus(200);
+        $response->assertHeader('content-type', 'application/pdf');
     }
 
     public function test_admin_can_download_order_invoice_pdf(): void

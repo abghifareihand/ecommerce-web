@@ -45,6 +45,7 @@ class StoreSettingController extends Controller
             'phone' => ['required', 'string', 'max:25'],
             'email' => ['nullable', 'email', 'max:100'],
             'address' => ['nullable', 'string', 'max:500'],
+            'bank_account' => ['nullable', 'string', 'max:1000'],
             'description' => ['nullable', 'string', 'max:1000'],
             'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,svg', 'max:2048'],
         ]);
@@ -57,6 +58,7 @@ class StoreSettingController extends Controller
             'phone' => $validated['phone'],
             'email' => $validated['email'] ?? null,
             'address' => $validated['address'] ?? null,
+            'bank_account' => $validated['bank_account'] ?? null,
             'description' => $validated['description'] ?? null,
         ];
 

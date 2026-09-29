@@ -20,7 +20,10 @@ return new class extends Migration
             $table->text('customer_address');
             $table->text('notes')->nullable();
             $table->decimal('total_amount', 12, 2);
-            $table->string('status')->default('pending'); // pending, confirmed, completed, cancelled
+            $table->decimal('shipping_cost', 12, 2)->nullable()->default(0);
+            $table->string('courier')->nullable();
+            $table->string('tracking_number')->nullable();
+            $table->string('status')->default('pending'); // pending, payment_pending, processing, shipped, completed, cancelled
             $table->timestamps();
         });
     }

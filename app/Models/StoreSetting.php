@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'tagline', 'logo', 'phone', 'email', 'address', 'description'])]
+#[Fillable(['name', 'tagline', 'logo', 'phone', 'email', 'address', 'bank_account', 'description'])]
 class StoreSetting extends Model
 {
     use HasFactory;

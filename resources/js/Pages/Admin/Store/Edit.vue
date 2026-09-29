@@ -20,6 +20,7 @@ const form = useForm({
     phone: props.store.phone || '',
     email: props.store.email || '',
     address: props.store.address || '',
+    bank_account: props.store.bank_account || '',
     description: props.store.description || '',
     logo: null,
 });
@@ -201,6 +202,21 @@ const submit = () => {
                                 :error="form.errors.email"
                                 placeholder="cth: kontak@ecostore.com"
                             />
+                        </div>
+
+                        <!-- Rekening Pembayaran Toko -->
+                        <div>
+                            <Textarea
+                                id="store-bank-account"
+                                label="Informasi Rekening Bank / Pembayaran"
+                                v-model="form.bank_account"
+                                :error="form.errors.bank_account"
+                                placeholder="cth: BCA: 123-456-7890 a/n EcoStore Indonesia&#10;Mandiri: 987-654-3210 a/n EcoStore Indonesia"
+                                :rows="3"
+                            />
+                            <p class="mt-1.5 text-xs text-slate-500">
+                                Rekening ini otomatis disisipkan saat Admin mengirim tagihan WhatsApp ke pelanggan dan dicetak pada invoice PDF.
+                            </p>
                         </div>
                     </div>
                 </div>

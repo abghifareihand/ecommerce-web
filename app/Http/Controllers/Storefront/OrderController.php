@@ -6,9 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\StoreSetting;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class OrderController extends Controller
 {
@@ -89,6 +93,8 @@ class OrderController extends Controller
             $totalText = 'Rp '.number_format($totalAmount, 0, ',', '.');
             $notesText = ! empty($validated['notes']) ? "\n*Catatan:* ".$validated['notes'] : '';
 
+            $trackingUrl = url("/orders/track/{$order->order_number}");
+
             $message = "Halo Admin {$storeName}, saya mau konfirmasi pesanan baru:\n\n".
                 "*No. Pesanan:* #{$order->order_number}\n".
                 "*Nama:* {$order->customer_name}\n".
@@ -96,8 +102,9 @@ class OrderController extends Controller
                 "*Alamat:* {$order->customer_address}{$notesText}\n\n".
                 "*Rincian Pesanan:*\n".
                 "{$itemsText}\n\n".
-                "*Total Belanja:* *{$totalText}*\n\n".
-                'Mohon info nomor rekening pembayarannya ya min. Terima kasih!';
+                "*Subtotal Belanja:* *{$totalText}*\n\n".
+                "🔍 *Link Lacak Pesanan:* {$trackingUrl}\n\n".
+                'Mohon info total beserta ongkir dan nomor rekening pembayarannya ya min. Terima kasih!';
 
             $encodedText = rawurlencode($message);
             $whatsAppUrl = "https://api.whatsapp.com/send?phone={$adminPhone}&text={$encodedText}";
@@ -109,5 +116,45 @@ class OrderController extends Controller
                 'whatsapp_url' => $whatsAppUrl,
             ]);
         });
+    }
+
+    /**
+     * Display the public order tracking page without requiring login.
+     */
+    public function track(Request $request, ?string $order_number = null): Response
+    {
+        $search = $order_number ?: $request->query('q');
+        $order = null;
+
+        if ($search) {
+            $cleanSearch = trim($search);
+            $rawNumber = ltrim($cleanSearch, '#');
+
+            $order = Order::with('items.product')
+                ->where('order_number', $rawNumber)
+                ->orWhere('order_number', $cleanSearch)
+                ->orWhere('customer_phone', $cleanSearch)
+                ->latest('id')
+                ->first();
+        }
+
+        return Inertia::render('Shop/Track', [
+            'order' => $order,
+            'searchedQuery' => $search ?? '',
+        ]);
+    }
+
+    /**
+     * Download the order invoice as a PDF without requiring login.
+     */
+    public function invoice(Order $order): HttpResponse
+    {
+        $order->load(['items.product']);
+
+        $pdf = Pdf::loadView('invoices.order-pdf', [
+            'order' => $order,
+        ]);
+
+        return $pdf->download("invoice-{$order->order_number}.pdf");
     }
 }

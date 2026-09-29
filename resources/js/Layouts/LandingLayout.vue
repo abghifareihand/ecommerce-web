@@ -7,10 +7,10 @@ import { Link } from '@inertiajs/vue3';
         <!-- Landing Header -->
         <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-100">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-20">
+                <div class="flex items-center justify-between h-16 sm:h-20 gap-3">
                     <!-- Brand / Logo -->
-                    <Link href="/" class="flex items-center gap-3 group">
-                        <div class="relative flex h-11 w-11 items-center justify-center rounded-lg bg-white border border-slate-200/80 shadow-xs group-hover:scale-105 transition-transform overflow-hidden shrink-0">
+                    <Link href="/" class="flex items-center gap-2.5 sm:gap-3 group min-w-0">
+                        <div class="relative flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-lg bg-white border border-slate-200/80 shadow-xs group-hover:scale-105 transition-transform overflow-hidden shrink-0">
                             <img
                                 v-if="$page.props.store?.logo_url"
                                 :src="$page.props.store.logo_url"
@@ -18,17 +18,14 @@ import { Link } from '@inertiajs/vue3';
                                 class="w-full h-full object-cover object-center"
                             />
                             <div v-else class="w-full h-full bg-linear-to-br from-emerald-500 to-emerald-700 flex items-center justify-center text-white font-bold">
-                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                                 </svg>
                             </div>
                         </div>
-                        <div>
-                            <span class="text-2xl font-extrabold tracking-tight text-slate-900 group-hover:text-emerald-700 transition-colors">
-                                {{ $page.props.store?.name || 'EcoStore' }}
-                            </span>
-                            <span class="block text-[11px] font-semibold text-slate-400 tracking-wider uppercase -mt-1">{{ $page.props.store?.tagline || 'Kriya & Produk UMKM' }}</span>
-                        </div>
+                        <span class="text-lg sm:text-2xl font-extrabold tracking-tight text-slate-900 group-hover:text-emerald-700 transition-colors truncate">
+                            {{ $page.props.store?.name || 'EcoStore' }}
+                        </span>
                     </Link>
 
                     <!-- Landing Nav Links (Home, Story, Values, Process) -->
@@ -40,10 +37,10 @@ import { Link } from '@inertiajs/vue3';
                     </nav>
 
                     <!-- Main Action Button to Shop App -->
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center shrink-0">
                         <Link
                             href="/products"
-                            class="inline-flex items-center gap-2 px-6 py-3 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md shadow-emerald-600/25 hover:shadow-lg transition-all transform hover:-translate-y-0.5"
+                            class="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-2 sm:px-6 sm:py-2.5 text-xs sm:text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs sm:shadow-md shadow-emerald-600/25 hover:shadow-lg transition-all shrink-0 whitespace-nowrap"
                         >
                             <span>Belanja Sekarang</span>
                             <span>&rarr;</span>
@@ -66,6 +63,7 @@ import { Link } from '@inertiajs/vue3';
                     <p v-if="$page.props.store?.address" class="text-slate-500 text-[11px] mt-1">{{ $page.props.store.address }}</p>
                 </div>
                 <div class="flex items-center gap-6">
+                    <Link href="/orders/track" class="hover:text-emerald-400 font-semibold transition-colors">Lacak Pesanan</Link>
                     <Link href="/products" class="hover:text-emerald-400 font-semibold transition-colors">Masuk ke Toko</Link>
                     <Link href="/admin/login" class="hover:text-slate-300 transition-colors">Login Admin</Link>
                 </div>

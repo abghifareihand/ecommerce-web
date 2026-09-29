@@ -145,28 +145,30 @@ const formatRupiah = (value) => {
         <!-- Added Item Toast -->
         <transition
             enter-active-class="transform ease-out duration-300 transition"
-            enter-from-class="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
-            enter-to-class="translate-y-0 opacity-100 sm:translate-x-0"
-            leave-active-class="transition ease-in duration-100"
+            enter-from-class="translate-y-4 opacity-0"
+            enter-to-class="translate-y-0 opacity-100"
+            leave-active-class="transition ease-in duration-200"
             leave-from-class="opacity-100"
-            leave-to-class="opacity-0"
+            leave-to-class="opacity-0 translate-y-4"
         >
             <div
                 v-if="addedNotification"
-                class="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-emerald-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-emerald-700/60"
+                class="fixed bottom-4 sm:bottom-6 left-4 right-4 z-50 flex items-center justify-between gap-3 bg-emerald-950/95 backdrop-blur-md text-white px-4 py-3 sm:px-5 sm:py-3.5 rounded-2xl shadow-2xl border border-emerald-600/40 max-w-md mx-auto"
             >
-                <div class="h-8 w-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                </div>
-                <div>
-                    <p class="text-xs text-emerald-300 font-medium">Masuk ke Keranjang!</p>
-                    <p class="text-sm font-bold truncate max-w-xs">{{ addedNotification }}</p>
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <div class="h-8 w-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-emerald-300 font-medium">Masuk ke Keranjang!</p>
+                        <p class="text-xs sm:text-sm font-bold truncate">{{ addedNotification }}</p>
+                    </div>
                 </div>
                 <Link
                     href="/cart"
-                    class="ml-3 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg transition-colors"
+                    class="shrink-0 whitespace-nowrap px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-xl transition-colors shadow-xs"
                 >
                     Buka Cart &rarr;
                 </Link>
@@ -217,7 +219,7 @@ const formatRupiah = (value) => {
                 class="mb-8"
             >
                 <div
-                    class="relative w-full rounded-2xl overflow-hidden shadow-sm border border-slate-200 aspect-21/9 sm:aspect-24/7 max-h-[340px] bg-slate-900 group"
+                    class="relative w-full rounded-2xl overflow-hidden shadow-sm border border-slate-200 aspect-16/10 sm:aspect-21/9 md:aspect-24/7 min-h-[220px] sm:min-h-[260px] max-h-[360px] bg-slate-900 group"
                     @mouseenter="pauseTimer"
                     @mouseleave="startTimer"
                     @touchstart="handleTouchStart"
@@ -238,23 +240,23 @@ const formatRupiah = (value) => {
                                 :alt="banner.title || 'Promo Banner'"
                                 class="w-full h-full object-cover object-center select-none"
                             />
-                            <div class="absolute inset-0 bg-linear-to-r from-black/80 via-black/35 to-transparent flex flex-col justify-center px-6 sm:px-12 text-white">
+                            <div class="absolute inset-0 bg-linear-to-r from-black/85 via-black/45 to-transparent flex flex-col justify-center p-5 sm:px-12 sm:py-8 text-white">
                                 <span
                                     v-if="banner.subtitle"
-                                    class="text-xs sm:text-sm font-bold text-emerald-400 uppercase tracking-wider mb-2"
+                                    class="text-[10px] sm:text-xs font-bold text-emerald-400 uppercase tracking-wider mb-1 sm:mb-2 line-clamp-1 sm:line-clamp-none max-w-sm sm:max-w-xl"
                                 >
                                     {{ banner.subtitle }}
                                 </span>
                                 <h2
                                     v-if="banner.title"
-                                    class="text-xl sm:text-3xl font-extrabold max-w-xl leading-tight"
+                                    class="text-base sm:text-2xl md:text-3xl font-extrabold max-w-xs sm:max-w-xl leading-snug sm:leading-tight line-clamp-2"
                                 >
                                     {{ banner.title }}
                                 </h2>
                                 <a
                                     v-if="banner.link_url"
                                     :href="banner.link_url"
-                                    class="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all w-fit"
+                                    class="mt-2.5 sm:mt-4 inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-1.5 sm:px-5 sm:py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl shadow-md transition-all w-fit"
                                 >
                                     <span>Lihat Penawaran</span>
                                     <span>&rarr;</span>
@@ -263,12 +265,12 @@ const formatRupiah = (value) => {
                         </div>
                     </div>
 
-                    <!-- Carousel Controls (if more than 1 banner) -->
+                    <!-- Carousel Controls (hidden on mobile to prevent overlapping text, swipe supported) -->
                     <template v-if="banners.length > 1">
                         <button
                             type="button"
                             @click="prevBanner(); startTimer();"
-                            class="absolute left-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-black/40 hover:bg-black/75 text-white flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs opacity-70 group-hover:opacity-100 hover:scale-105"
+                            class="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-black/40 hover:bg-black/75 text-white items-center justify-center transition-all cursor-pointer backdrop-blur-xs opacity-70 group-hover:opacity-100 hover:scale-105 z-10"
                             aria-label="Previous Banner"
                         >
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -278,7 +280,7 @@ const formatRupiah = (value) => {
                         <button
                             type="button"
                             @click="nextBanner(); startTimer();"
-                            class="absolute right-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-black/40 hover:bg-black/75 text-white flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs opacity-70 group-hover:opacity-100 hover:scale-105"
+                            class="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-black/40 hover:bg-black/75 text-white items-center justify-center transition-all cursor-pointer backdrop-blur-xs opacity-70 group-hover:opacity-100 hover:scale-105 z-10"
                             aria-label="Next Banner"
                         >
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -287,14 +289,14 @@ const formatRupiah = (value) => {
                         </button>
 
                         <!-- Dots Indicator -->
-                        <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-black/30 backdrop-blur-xs px-2.5 py-1 rounded-full">
+                        <div class="absolute bottom-2.5 sm:bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-black/40 backdrop-blur-xs px-2.5 py-1 rounded-full z-10">
                             <button
                                 v-for="(_, idx) in banners"
                                 :key="idx"
                                 type="button"
                                 @click="goToBanner(idx)"
-                                class="h-2 rounded-full transition-all duration-300 cursor-pointer"
-                                :class="currentBannerIndex === idx ? 'w-6 bg-emerald-400' : 'w-2 bg-white/60 hover:bg-white'"
+                                class="h-1.5 sm:h-2 rounded-full transition-all duration-300 cursor-pointer"
+                                :class="currentBannerIndex === idx ? 'w-5 sm:w-6 bg-emerald-400' : 'w-1.5 sm:w-2 bg-white/60 hover:bg-white'"
                                 :aria-label="`Slide ${idx + 1}`"
                             />
                         </div>

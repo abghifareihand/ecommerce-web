@@ -32,8 +32,12 @@ class OrderController extends Controller
             });
         }
 
-        if ($status && in_array($status, ['pending', 'confirmed', 'completed', 'cancelled'])) {
-            $query->where('status', $status);
+        if ($status && in_array($status, ['pending', 'payment_pending', 'processing', 'confirmed', 'shipped', 'completed', 'cancelled'])) {
+            if ($status === 'processing') {
+                $query->whereIn('status', ['processing', 'confirmed']);
+            } else {
+                $query->where('status', $status);
+            }
         }
 
         $orders = $query->paginate(10)->withQueryString();
@@ -47,7 +51,9 @@ class OrderController extends Controller
             'statusCounts' => [
                 'all' => Order::count(),
                 'pending' => Order::where('status', 'pending')->count(),
-                'confirmed' => Order::where('status', 'confirmed')->count(),
+                'payment_pending' => Order::where('status', 'payment_pending')->count(),
+                'processing' => Order::whereIn('status', ['processing', 'confirmed'])->count(),
+                'shipped' => Order::where('status', 'shipped')->count(),
                 'completed' => Order::where('status', 'completed')->count(),
                 'cancelled' => Order::where('status', 'cancelled')->count(),
             ],
@@ -67,38 +73,75 @@ class OrderController extends Controller
             $cleanPhone = '62'.substr($cleanPhone, 1);
         }
 
-        $invoiceUrl = route('admin.orders.pdf', $order->id);
-        $storeName = StoreSetting::first()?->name ?? 'EcoStore';
+        $store = StoreSetting::first();
+        $storeName = $store?->name ?? 'EcoStore';
+        $trackingUrl = url("/orders/track/{$order->order_number}");
 
-        $customerWaMessage = "Halo Kak {$order->customer_name}, terima kasih telah berbelanja di {$storeName}!\n\n".
-            "Pesanan Anda dengan nomor *#{$order->order_number}* saat ini berstatus: *".strtoupper($order->status)."*.\n\n".
-            "Berikut detail invoice resmi Anda yang dapat diunduh:\n".
-            "{$invoiceUrl}\n\n".
+        // 1. WhatsApp Template: Rincian Tagihan & Ongkir
+        $subtotalFmt = number_format($order->total_amount, 0, ',', '.');
+        $shippingFmt = number_format($order->shipping_cost, 0, ',', '.');
+        $grandTotalFmt = number_format($order->grand_total, 0, ',', '.');
+        $courierName = $order->courier ?: 'Kurir Rekanan';
+
+        $billingMessage = "Halo Kak {$order->customer_name}, berikut rincian tagihan pesanan Anda di {$storeName} (*#{$order->order_number}*):\n\n".
+            "📦 *Rincian Biaya:*\n".
+            "- Subtotal Barang : Rp {$subtotalFmt}\n".
+            "- Ongkos Kirim ({$courierName}) : Rp {$shippingFmt}\n".
+            "- *Total Pembayaran:* *Rp {$grandTotalFmt}*\n\n".
+            ($store?->bank_account ? "💳 *Silakan Transfer ke Rekening Toko:*\n{$store->bank_account}\n\n" : '').
+            "🔍 *Lacak Status Pesanan:* {$trackingUrl}\n\n".
+            'Mohon kirimkan bukti transfer ke WhatsApp ini jika sudah melakukan pembayaran ya Kak. Terima kasih!';
+
+        $waBillingUrl = "https://api.whatsapp.com/send?phone={$cleanPhone}&text=".rawurlencode($billingMessage);
+
+        // 2. WhatsApp Template: Informasi Resi & Pengiriman
+        $trackingNum = $order->tracking_number ?: '-';
+        $shippingMessage = "Halo Kak {$order->customer_name}, paket pesanan Anda (*#{$order->order_number}*) dari {$storeName} sudah diserahkan ke jasa kurir!\n\n".
+            "🚚 *Ekspedisi:* {$courierName}\n".
+            "🔖 *No. Resi:* *{$trackingNum}*\n\n".
+            "🔍 *Lacak Status Pesanan Anda:* {$trackingUrl}\n\n".
+            'Terima kasih atas pesanannya! Ditunggu barangnya sampai dengan selamat ya Kak.';
+
+        $waShippingUrl = "https://api.whatsapp.com/send?phone={$cleanPhone}&text=".rawurlencode($shippingMessage);
+
+        // 3. Generic status update message
+        $genericMessage = "Halo Kak {$order->customer_name}, status pesanan Anda *#{$order->order_number}* di {$storeName} saat ini: *".strtoupper($order->status_label)."*.\n\n".
+            "🔍 Lacak Pesanan: {$trackingUrl}\n".
             'Terima kasih atas kepercayaan Anda!';
-
-        $encodedMsg = rawurlencode($customerWaMessage);
-        $customerWaUrl = "https://api.whatsapp.com/send?phone={$cleanPhone}&text={$encodedMsg}";
+        $customerWaUrl = "https://api.whatsapp.com/send?phone={$cleanPhone}&text=".rawurlencode($genericMessage);
 
         return Inertia::render('Admin/Orders/Show', [
             'order' => $order,
             'customerWaUrl' => $customerWaUrl,
+            'waBillingUrl' => $waBillingUrl,
+            'waShippingUrl' => $waShippingUrl,
+            'trackingUrl' => $trackingUrl,
+            'store' => $store,
         ]);
     }
 
     /**
-     * Update order status.
+     * Update order status, shipping cost, courier, and tracking number.
      */
     public function updateStatus(Request $request, Order $order): RedirectResponse
     {
         $validated = $request->validate([
-            'status' => ['required', 'in:pending,confirmed,completed,cancelled'],
+            'status' => ['required', 'in:pending,payment_pending,processing,confirmed,shipped,completed,cancelled'],
+            'shipping_cost' => ['nullable', 'numeric', 'min:0'],
+            'courier' => ['nullable', 'string', 'max:100'],
+            'tracking_number' => ['nullable', 'string', 'max:100'],
         ]);
+
+        $status = $validated['status'] === 'confirmed' ? 'processing' : $validated['status'];
 
         $order->update([
-            'status' => $validated['status'],
+            'status' => $status,
+            'shipping_cost' => $validated['shipping_cost'] ?? 0,
+            'courier' => $validated['courier'] ?? null,
+            'tracking_number' => $validated['tracking_number'] ?? null,
         ]);
 
-        return back()->with('success', "Status pesanan #{$order->order_number} berhasil diperbarui.");
+        return back()->with('success', "Informasi dan status pesanan #{$order->order_number} berhasil diperbarui.");
     }
 
     /**

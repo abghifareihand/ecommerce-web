@@ -30,6 +30,8 @@ Route::get('/products/{product:slug}', [StorefrontProductController::class, 'sho
 Route::get('/cart', fn () => Inertia::render('Guest/Cart/Index'))->name('cart.index');
 Route::get('/checkout', fn () => Inertia::render('Guest/Checkout/Index'))->name('checkout.index');
 Route::post('/orders', [StorefrontOrderController::class, 'store'])->name('orders.store');
+Route::get('/orders/track/{order_number?}', [StorefrontOrderController::class, 'track'])->name('orders.track');
+Route::get('/orders/{order:order_number}/invoice', [StorefrontOrderController::class, 'invoice'])->name('orders.invoice');
 
 /*
 |--------------------------------------------------------------------------

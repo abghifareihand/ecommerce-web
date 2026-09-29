@@ -28,6 +28,7 @@ class StoreSettingSeeder extends Seeder
                 'phone' => '08985454555',
                 'email' => 'kontak@ecostore.com',
                 'address' => 'Jl. Kerajinan No. 12, Sleman, D.I. Yogyakarta 55281',
+                'bank_account' => "BCA: 123-456-7890 a/n EcoStore Indonesia\nMandiri: 987-654-3210 a/n EcoStore Indonesia",
                 'description' => 'EcoStore bermula dari sebuah bengkel kriya keluarga yang peduli dengan keberlanjutan lingkungan. Kami percaya bahwa produk rumah tangga dan dekorasi tidak harus mengorbankan kelestarian alam.',
             ]
         );

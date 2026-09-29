@@ -23,8 +23,18 @@ class Order extends Model
         'customer_address',
         'notes',
         'total_amount',
+        'shipping_cost',
+        'courier',
+        'tracking_number',
         'status',
     ];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = ['grand_total', 'status_label'];
 
     /**
      * Get the attributes that should be cast.
@@ -35,7 +45,32 @@ class Order extends Model
     {
         return [
             'total_amount' => 'decimal:2',
+            'shipping_cost' => 'decimal:2',
         ];
+    }
+
+    /**
+     * Calculate grand total including shipping cost.
+     */
+    public function getGrandTotalAttribute(): float
+    {
+        return (float) ($this->total_amount ?? 0) + (float) ($this->shipping_cost ?? 0);
+    }
+
+    /**
+     * Get user-friendly Indonesian status label.
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        return match ($this->status) {
+            'pending' => 'Pending (Cek Ongkir)',
+            'payment_pending' => 'Menunggu Pembayaran',
+            'processing', 'confirmed' => 'Diproses & Dikemas',
+            'shipped' => 'Sedang Dikirim',
+            'completed' => 'Selesai',
+            'cancelled' => 'Dibatalkan',
+            default => ucfirst($this->status),
+        };
     }
 
     /**

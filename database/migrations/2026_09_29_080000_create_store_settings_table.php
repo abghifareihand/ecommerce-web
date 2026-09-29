@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('phone')->default('08985454555');
             $table->string('email')->nullable()->default('kontak@ecostore.com');
             $table->text('address')->nullable();
+            $table->text('bank_account')->nullable();
             $table->text('description')->nullable();
             $table->timestamps();
         });

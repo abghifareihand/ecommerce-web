@@ -60,30 +60,32 @@ const handleBuyNow = () => {
         <!-- Added Notification Toast -->
         <transition
             enter-active-class="transform ease-out duration-300 transition"
-            enter-from-class="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
-            enter-to-class="translate-y-0 opacity-100 sm:translate-x-0"
-            leave-active-class="transition ease-in duration-100"
+            enter-from-class="translate-y-4 opacity-0"
+            enter-to-class="translate-y-0 opacity-100"
+            leave-active-class="transition ease-in duration-200"
             leave-from-class="opacity-100"
-            leave-to-class="opacity-0"
+            leave-to-class="opacity-0 translate-y-4"
         >
             <div
                 v-if="showAddedToast"
-                class="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-emerald-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-emerald-700/60"
+                class="fixed bottom-4 sm:bottom-6 left-4 right-4 z-50 flex items-center justify-between gap-3 bg-emerald-950/95 backdrop-blur-md text-white px-4 py-3 sm:px-5 sm:py-3.5 rounded-2xl shadow-2xl border border-emerald-600/40 max-w-md mx-auto"
             >
-                <div class="h-8 w-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                </div>
-                <div>
-                    <p class="text-xs text-emerald-300 font-medium">Berhasil Masuk Keranjang!</p>
-                    <p class="text-sm font-bold">{{ quantity }}x {{ product.name }}</p>
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <div class="h-8 w-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-emerald-300 font-medium">Berhasil Masuk Keranjang!</p>
+                        <p class="text-xs sm:text-sm font-bold truncate">{{ quantity }}x {{ product.name }}</p>
+                    </div>
                 </div>
                 <Link
                     href="/cart"
-                    class="ml-3 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg transition-colors"
+                    class="shrink-0 whitespace-nowrap px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-xl transition-colors shadow-xs"
                 >
-                    Lihat Cart
+                    Lihat Cart &rarr;
                 </Link>
             </div>
         </transition>

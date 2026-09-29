@@ -31,7 +31,7 @@ const submit = () => {
 <template>
     <Head :title="`Edit Banner: ${banner.title || 'Promo'} - Admin`" />
 
-    <AdminLayout :title="`Edit Banner: ${banner.title || 'Promo'}`">
+    <AdminLayout :title="`Edit Banner Promo`">
         <div class="w-full">
             <!-- Header with Back Link -->
             <div class="mb-6 flex items-center justify-between">

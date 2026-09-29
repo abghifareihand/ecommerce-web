@@ -117,7 +117,10 @@
             text-transform: uppercase;
         }
         .badge-pending { background-color: #fef3c7; color: #b45309; }
-        .badge-confirmed { background-color: #dbeafe; color: #1e40af; }
+        .badge-payment_pending { background-color: #ffedd5; color: #c2410c; }
+        .badge-processing { background-color: #e0f2fe; color: #0369a1; }
+        .badge-confirmed { background-color: #e0f2fe; color: #0369a1; }
+        .badge-shipped { background-color: #f3e8ff; color: #7e22ce; }
         .badge-completed { background-color: #dcfce7; color: #15803d; }
         .badge-cancelled { background-color: #fee2e2; color: #b91c1c; }
         .footer {
@@ -134,7 +137,7 @@
         <div class="invoice-title">
             <h2>INVOICE PESANAN</h2>
             <div style="margin-top: 4px;">
-                <span class="badge badge-{{ $order->status }}">Status: {{ strtoupper($order->status) }}</span>
+                <span class="badge badge-{{ $order->status }}">Status: {{ strtoupper($order->status_label ?? $order->status) }}</span>
             </div>
         </div>
         <table style="border: none; border-collapse: collapse;">
@@ -175,7 +178,13 @@
         <div class="order-meta">
             <strong>No. Invoice:</strong> {{ $order->order_number }}<br>
             <strong>Tanggal:</strong> {{ $order->created_at->format('d/m/Y H:i') }} WIB<br>
-            <strong>Kontak Toko:</strong> {{ $storePhone }}
+            <strong>Kontak Toko:</strong> {{ $storePhone }}<br>
+            @if($order->courier)
+                <strong>Ekspedisi / Kurir:</strong> {{ $order->courier }}<br>
+            @endif
+            @if($order->tracking_number)
+                <strong>No. Resi Pengiriman:</strong> <span style="font-family: monospace; font-weight: bold; color: #0f172a;">{{ $order->tracking_number }}</span><br>
+            @endif
         </div>
         <div class="clear"></div>
     </div>
@@ -206,21 +215,43 @@
     <div class="total-box">
         <table>
             <tr>
-                <td>Subtotal</td>
+                <td>Subtotal Belanja</td>
                 <td class="text-right">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
             </tr>
             <tr>
-                <td class="grand-total">Total Pembayaran</td>
-                <td class="text-right grand-total">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
+                <td>Ongkos Kirim</td>
+                <td class="text-right">
+                    @if($order->shipping_cost > 0)
+                        Rp {{ number_format($order->shipping_cost, 0, ',', '.') }}
+                    @elseif($order->status === 'pending')
+                        <span style="color: #b45309; font-size: 11px;">(Menunggu konfirmasi)</span>
+                    @else
+                        <span style="color: #16a34a; font-size: 11px;">Rp 0 (Gratis)</span>
+                    @endif
+                </td>
+            </tr>
+            <tr>
+                <td class="grand-total">Total Tagihan</td>
+                <td class="text-right grand-total">Rp {{ number_format($order->grand_total, 0, ',', '.') }}</td>
             </tr>
         </table>
     </div>
     <div class="clear"></div>
 
+    @if($store?->bank_account)
+        <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; margin-bottom: 20px;">
+            <strong style="color: #0f172a; font-size: 12px;">Rekening Pembayaran Toko:</strong>
+            <div style="margin-top: 4px; font-size: 12px; color: #334155; white-space: pre-line;">{!! nl2br(e($store->bank_account)) !!}</div>
+            <div style="margin-top: 6px; font-size: 11px; color: #64748b;">
+                * Kirimkan bukti transfer ke WhatsApp Admin di <strong>{{ $storePhone }}</strong> dengan mencantumkan nomor invoice <strong>{{ $order->order_number }}</strong>.
+            </div>
+        </div>
+    @endif
+
     <div style="background-color: #f0fdf4; border: 1px dashed #86efac; border-radius: 6px; padding: 12px; margin-bottom: 25px;">
-        <strong style="color: #166534;">Informasi Konfirmasi &amp; Pengiriman:</strong>
+        <strong style="color: #166534;">Lacak Status Pesanan:</strong>
         <p style="margin: 4px 0 0 0; font-size: 12px; color: #14532d;">
-            Pesanan ini tercatat resmi di sistem {{ $storeName }}. Jika ada pertanyaan mengenai proses pengiriman atau pembayaran, silakan hubungi WhatsApp Admin di <strong>{{ $storePhone }}</strong> dengan menyebutkan nomor invoice <strong>{{ $order->order_number }}</strong>.
+            Pelanggan dapat memantau perkembangan pesanan secara real-time kapan saja melalui tautan lacak pesanan toko kami di: <strong>{{ url('/orders/track/' . $order->order_number) }}</strong>
         </p>
     </div>
 

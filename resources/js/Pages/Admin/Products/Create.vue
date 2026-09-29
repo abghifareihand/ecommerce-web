@@ -20,7 +20,7 @@ const submit = () => {
 <template>
     <Head title="Tambah Produk Baru - Admin" />
 
-    <AdminLayout title="Tambah Produk Baru">
+    <AdminLayout title="Tambah Produk">
         <div class="w-full">
             <!-- Header with Back Link -->
             <div class="mb-6 flex items-center justify-between">

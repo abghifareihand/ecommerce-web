@@ -28,7 +28,7 @@ const submit = () => {
 <template>
     <Head title="Tambah Banner Promo - Admin" />
 
-    <AdminLayout title="Tambah Banner Baru">
+    <AdminLayout title="Tambah Banner">
         <div class="w-full">
             <!-- Header with Back Link -->
             <div class="mb-6 flex items-center justify-between">
