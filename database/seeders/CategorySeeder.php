@@ -43,37 +43,12 @@ class CategorySeeder extends Seeder
                 'description' => 'Kaos katun bambu, syal tenun alami, dan celemek linen ramah lingkungan.',
                 'order' => 5,
             ],
-            [
-                'name' => 'Perawatan Diri & Spa',
-                'slug' => 'perawatan-diri-spa',
-                'description' => 'Sabun batang vegan alami, sikat gigi bambu, dan spons mandi serat loofah.',
-                'order' => 6,
-            ],
-            [
-                'name' => 'Alat Tulis & Kertas Daur Ulang',
-                'slug' => 'alat-tulis-kertas-daur-ulang',
-                'description' => 'Buku catatan kertas daur ulang, pulpen bambu, dan pouch pensil kain serat.',
-                'order' => 7,
-            ],
-            [
-                'name' => 'Tanaman & Kebun Rumah',
-                'slug' => 'tanaman-kebun-rumah',
-                'description' => 'Pot sabut kelapa organik, set alat kebun mini, dan benih tanaman herbal.',
-                'order' => 8,
-            ],
-            [
-                'name' => 'Mainan Edukatif Kayu',
-                'slug' => 'mainan-edukatif-kayu',
-                'description' => 'Balok susun kayu pinus, puzzle hewan non-toksik, dan miniatur ramah anak.',
-                'order' => 9,
-            ],
-            [
-                'name' => 'Lilin Aromaterapi & Diffuser',
-                'slug' => 'lilin-aromaterapi-diffuser',
-                'description' => 'Lilin minyak kelapa sawit lestari, minyak esensial lokal, dan reed diffuser bambu.',
-                'order' => 10,
-            ],
         ];
+
+        $allowedSlugs = array_column($categories, 'slug');
+
+        // Delete categories that are not in the top 5
+        Category::whereNotIn('slug', $allowedSlugs)->delete();
 
         foreach ($categories as $data) {
             Category::updateOrCreate(['slug' => $data['slug']], $data);
