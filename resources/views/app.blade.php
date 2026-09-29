@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title inertia>{{ config('app.name', 'EcoStore') }}</title>
 
+    @php
+        $store = \App\Models\StoreSetting::first();
+        $faviconUrl = $store?->logo_url ?? (file_exists(public_path('assets/img/logo.png')) ? asset('assets/img/logo.png') : asset('favicon.ico'));
+    @endphp
+    <!-- Dynamic Favicon -->
+    <link rel="icon" id="dynamic-favicon" type="image/png" href="{{ $faviconUrl }}">
+    <link rel="shortcut icon" href="{{ $faviconUrl }}">
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
